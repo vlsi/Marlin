@@ -375,15 +375,15 @@ class MenuItem_bool : public MenuEditItemBase {
   NEXT_ITEM();                               \
 }while(0)
 
-// PSTRING_ITEM is like STATIC_ITEM but it takes
-// two PSTRs with the style as the last parameter.
+// PSTRING_ITEM is like STATIC_ITEM
+// but also takes a PSTR and style.
 
 #define PSTRING_ITEM_F_P(FLABEL, PVAL, STYLE) do{ \
   constexpr int m = 20;                          \
   char msg[m+1];                                 \
   if (_menuLineNr == _thisItemNr) {              \
     msg[0] = ':'; msg[1] = ' ';                  \
-    strncpy_P(msg+2, PVAL, m-2);                 \
+    utf8_strncpy(msg+2, PSTR(PVAL), m-2);        \
     if (msg[m-1] & 0x80) msg[m-1] = '\0';        \
   }                                              \
   STATIC_ITEM_F(FLABEL, STYLE, msg);              \

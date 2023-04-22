@@ -161,7 +161,7 @@ void MenuItemBase::_draw(const bool sel, const uint8_t row, FSTR_P const fstr, c
     tft.add_image(r_offset, MENU_ITEM_ICON_Y, image, COLOR_MENU_TEXT, sel ? COLOR_SELECTION_BG : COLOR_BACKGROUND);
   }
   else
-    r_offset -= MENU_TEXT_X;
+    r_offset -= MENU_TEXT_X_OFFSET;
 
   const bool center = bool(style & SS_CENTER), full = bool(style & SS_FULL);
   if (!full || !vstr) {
@@ -181,7 +181,7 @@ void MenuItemBase::_draw(const bool sel, const uint8_t row, FSTR_P const fstr, c
       tft.add_text(r_offset, MENU_TEXT_Y_OFFSET, COLOR_MENU_TEXT, tft_string, max_width);
     }
 
-    max_width = _MAX(r_offset - l_offset - MENU_TEXT_X, 1);
+    max_width = _MAX(r_offset - l_offset - MENU_TEXT_X_OFFSET, 1);
     tft_string.set(string, itemIndex, itemStringC, itemStringF);
     tft.add_text(l_offset, MENU_TEXT_Y_OFFSET, COLOR_MENU_TEXT, tft_string, max_width);
 
@@ -201,7 +201,7 @@ void MenuEditItemBase::draw(const bool sel, const uint8_t row, FSTR_P const fstr
 }
 
 // Draw a static item with no left-right margin required. Centered by default.
-void MenuItem_static::draw(const uint8_t row, FSTR_P const fstr, const uint8_t style/*=SS_DEFAULT*/, const char * const vstr/*=nullptr*/) {
+void MenuItem_static::draw(const uint8_t row, FSTR_P const fstr, const uint8_t style/*=SS_DEFAULT*/, const char *vstr/*=nullptr*/) {
   menu_item(row);
 
   if (fstr)
@@ -220,7 +220,7 @@ void MenuItem_static::draw(const uint8_t row, FSTR_P const fstr, const uint8_t s
   if (*vstr == ':') { tft_string.add(':'); vstr++; }
 
   // Left-justified label
-  tft.add_text(0, MENU_TEXT_Y, COLOR_MENU_TEXT, tft_string);
+  tft.add_text(0, MENU_TEXT_Y_OFFSET, COLOR_MENU_TEXT, tft_string);
 
   // Right-justified value, after spaces
   while (*vstr == ' ') vstr++;
@@ -297,7 +297,7 @@ void _wrap_string(uint8_t &row, T string, read_byte_cb_t cb_read_byte, const boo
   auto print_str = [&row] () {
     menu_line(row++);
     tft_string.trim();
-    tft.add_text(tft_string.center(TFT_WIDTH), MENU_TEXT_Y, COLOR_MENU_TEXT, tft_string);
+    tft.add_text(tft_string.center(TFT_WIDTH), MENU_TEXT_Y_OFFSET, COLOR_MENU_TEXT, tft_string);
     tft_string.set();
   };
 
