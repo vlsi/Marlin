@@ -787,7 +787,11 @@ void unified_bed_leveling::shift_mesh_height() {
         }
       #endif
 
-      best = do_furthest
+      #ifndef HUGE_VALF
+        #define HUGE_VALF (10e100F)
+      #endif
+
+      best = do_furthest // Points with valid data or HUGE_VALF are skipped
         ? find_furthest_invalid_mesh_point()
         : find_closest_mesh_point_of_type(INVALID, nearby, true);
 
@@ -797,7 +801,7 @@ void unified_bed_leveling::shift_mesh_height() {
                       best.meshpos(),
                       stow_probe ? PROBE_PT_STOW : PROBE_PT_RAISE, param.V_verbosity
                     );
-        z_values[best.pos.x][best.pos.y] = measured_z;
+        z_values[best.pos.x][best.pos.y] = isnan(measured_z) ? HUGE_VALF : measured_z;  // Mark invalid point already probed with HUGE_VALF to omit it in the next loop
         #if ENABLED(EXTENSIBLE_UI)
           ExtUI::onMeshUpdate(best.pos, ExtUI::G29_POINT_FINISH);
           ExtUI::onMeshUpdate(best.pos, measured_z);
@@ -806,6 +810,8 @@ void unified_bed_leveling::shift_mesh_height() {
       SERIAL_FLUSH(); // Prevent host M105 buffer overrun.
 
     } while (best.pos.x >= 0 && --count);
+
+    GRID_LOOP(x, y) if (z_values[x][y] == HUGE_VALF) z_values[x][y] = NAN; // Restore NAN for HUGE_VALF marks
 
     TERN_(EXTENSIBLE_UI, ExtUI::onMeshUpdate(best.pos, ExtUI::G29_FINISH));
 
