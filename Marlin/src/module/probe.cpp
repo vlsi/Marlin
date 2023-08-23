@@ -85,7 +85,7 @@
 #if HAS_Z_SERVO_PROBE
   #include "servo.h"
 #endif
-
+#include "../../src/lcd/extui/mks_ui/draw_ui.h"
 #if HAS_PTC
   #include "../feature/probe_temp_comp.h"
 #endif
@@ -104,7 +104,7 @@
 #include "../core/debug_out.h"
 
 Probe probe;
-
+extern volatile uint8_t G29_COMMAND_FINISHED;
 xyz_pos_t Probe::offset; // Initialized by settings.load()
 
 #if HAS_PROBE_XY_OFFSET
@@ -849,6 +849,7 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
  *   - Raise to the BETWEEN height
  * - Return the probed Z position
  */
+extern uint8_t Auto_leveling_succse;
 float Probe::probe_at_point(const_float_t rx, const_float_t ry, const ProbePtRaise raise_after/*=PROBE_PT_NONE*/, const uint8_t verbose_level/*=0*/, const bool probe_relative/*=true*/, const bool sanity_check/*=true*/) {
   DEBUG_SECTION(log_probe, "Probe::probe_at_point", DEBUGGING(LEVELING));
 
@@ -903,6 +904,10 @@ float Probe::probe_at_point(const_float_t rx, const_float_t ry, const ProbePtRai
 
   if (isnan(measured_z)) {
     stow();
+    //回零失败
+    Auto_leveling_succse = 0;
+    clear_cur_ui();
+    lv_draw_dialog(DIALOG_TYPE_PROBING_FAILED);
     LCD_MESSAGE(MSG_LCD_PROBING_FAILED);
     #if DISABLED(G29_RETRY_AND_RECOVER)
       SERIAL_ERROR_MSG(STR_ERR_PROBING_FAILED);

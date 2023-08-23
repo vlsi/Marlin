@@ -205,6 +205,7 @@ static inline int freeMemory() {
   return &top - reinterpret_cast<char*>(_sbrk(0));
 }
 
+void _delay_ms(int delay_ms);
 #pragma GCC diagnostic pop
 
 // ------------------------
@@ -279,3 +280,9 @@ public:
   static void set_pwm_frequency(const pin_t pin, const uint16_t f_desired);
 
 };
+//�빤
+// inline void watchdog_refresh() {
+//   TERN_(USE_WATCHDOG, HAL_watchdog_refresh());
+// }
+bool ret_e_dir_odr();
+void set_e_dir_odr();

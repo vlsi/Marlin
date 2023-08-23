@@ -32,6 +32,8 @@ void disp_step_heat();
 void disp_desire_temp();
 void disp_ext_heart();
 void disp_add_dec();
+void disp_preHeat_img();
+extern void lv_preHeat_temp_refr();
 
 #ifdef __cplusplus
   } /* C-declarations for C++ */

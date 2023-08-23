@@ -59,6 +59,7 @@
   #include "lcd/touch/touch_buttons.h"
 #endif
 
+#include "pins/pins.h"
 #if HAS_TFT_LVGL_UI
   #include "lcd/extui/mks_ui/tft_lvgl_configuration.h"
   #include "lcd/extui/mks_ui/draw_ui.h"
@@ -356,6 +357,7 @@ void startOrResumeJob() {
 
 #if ENABLED(SDSUPPORT)
 
+    bool die_for_get = false;
   inline void abortSDPrinting() {
     IF_DISABLED(NO_SD_AUTOSTART, card.autofile_cancel());
     card.abortFilePrintNow(TERN_(SD_RESORT, true));
@@ -371,6 +373,9 @@ void startOrResumeJob() {
 
     wait_for_heatup = false;
 
+    if(!die_for_get)
+      TERN_(POWER_LOSS_RECOVERY, recovery.purge());
+
     TERN_(POWER_LOSS_RECOVERY, recovery.purge());
 
     #ifdef EVENT_GCODE_SD_ABORT
@@ -380,12 +385,44 @@ void startOrResumeJob() {
     TERN_(PASSWORD_AFTER_SD_PRINT_ABORT, password.lock_machine());
   }
 
-  inline void finishSDPrinting() {
-    if (queue.enqueue_one(F("M1001"))) {  // Keep trying until it gets queued
+extern int32_t print_times;
+extern bool once_flag;
+
+  inline void finishSDPrinting()
+  {
+    char buf[30] = { 0 };
+    if (1)//(queue.enqueue_one(F("M1001")))
+    {  // Keep trying until it gets queued
       marlin_state = MF_RUNNING;          // Signal to stop trying
       TERN_(PASSWORD_AFTER_SD_PRINT_END, password.lock_machine());
       TERN_(DGUS_LCD_UI_MKS, ScreenHandler.SDPrintingFinished());
     }
+
+
+        if (once_flag == 0)
+        {
+            once_flag = true;
+            stop_print_time();
+            flash_preview_begin = false;
+            default_preview_flg = false;
+
+            if(print_times > 1)
+            {
+                print_times--;
+                // Moving conveyor belt
+                sprintf(buf, PSTR("G92 I0\nG1 I%d F1000"), I_MOVE_DISTANCE);
+                gcode.process_subcommands_now(PSTR(buf));
+                planner.synchronize();
+
+                // Print again
+                start_printing();
+            }
+            else
+            {
+                clear_cur_ui();
+                lv_draw_dialog(DIALOG_TYPE_FINISH_PRINT);
+            }
+        }
   }
 
 #endif // SDSUPPORT
@@ -902,7 +939,7 @@ void kill(FSTR_P const lcd_error/*=nullptr*/, FSTR_P const lcd_component/*=nullp
     UNUSED(lcd_error); UNUSED(lcd_component);
   #endif
 
-  TERN_(HAS_TFT_LVGL_UI, lv_draw_error_message(lcd_error));
+  TERN_(HAS_TFT_LVGL_UI, lv_draw_error_message((PGM_P const)lcd_error));
 
   // "Error:Printer halted. kill() called!"
   SERIAL_ERROR_MSG(STR_ERR_KILLED);
@@ -1648,6 +1685,15 @@ void setup() {
   SETUP_LOG("setup() completed.");
 
   TERN_(MARLIN_TEST_BUILD, runStartupTests());
+    pinMode(HEATER_1_PIN, OUTPUT);
+    if(gCfgItems.floodlight_state)
+    {
+        digitalWrite(HEATER_1_PIN, HIGH);
+    }
+    else
+    {
+        digitalWrite(HEATER_1_PIN, LOW);
+    }
 }
 
 /**
@@ -1672,6 +1718,10 @@ void loop() {
       if (marlin_state == MF_SD_COMPLETE) finishSDPrinting();
     #endif
 
+    if(die_for_get)
+    {
+        die_for_get = false;
+    }
     queue.advance();
 
     #if EITHER(POWER_OFF_TIMER, POWER_OFF_WAIT_FOR_COOLDOWN)

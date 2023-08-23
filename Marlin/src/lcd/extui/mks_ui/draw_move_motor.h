@@ -28,6 +28,7 @@
 void lv_draw_move_motor();
 void lv_clear_move_motor();
 void disp_move_dist();
+void disp_cur_pos();
 
 #ifdef __cplusplus
   } /* C-declarations for C++ */

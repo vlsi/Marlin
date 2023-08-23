@@ -36,6 +36,7 @@ GCodeQueue queue;
 #include "../module/temperature.h"
 #include "../MarlinCore.h"
 #include "../core/bug_on.h"
+#include "../Marlin/src/lcd/extui/mks_ui/draw_ui.h"
 
 #if ENABLED(PRINTER_EVENT_LEDS)
   #include "../feature/leds/printer_event_leds.h"
@@ -57,6 +58,7 @@ GCodeQueue queue;
   #include "../feature/repeat.h"
 #endif
 
+Layout_stop_t Layout_stop_num;
 // Frequently used G-code strings
 PGMSTR(G28_STR, "G28");
 
@@ -325,7 +327,28 @@ FORCE_INLINE bool is_M29(const char * const cmd) {  // matches "M29" & "M29 ", b
 
 inline void process_stream_char(const char c, uint8_t &sis, char (&buff)[MAX_CMD_SIZE], int &ind) {
 
-  if (sis == PS_EOL) return;    // EOL comment or overflow
+  if (sis == PS_EOL) {
+    if((Layout_stop_num.index < 25)&&((!Layout_stop_num.already_obtained_flag)||(!Layout_stop_num.bottom_already_obtained_flag)))
+    {
+      Layout_stop_num.string[Layout_stop_num.index++] = c;
+    }
+
+    if((Layout_stop_num.index > 15)&&(!Layout_stop_num.seek_flag))
+    {
+      if(strstr(Layout_stop_num.string,"Layer height") != NULL)
+      {
+        Layout_stop_num.seek_flag = true;
+      }
+    }
+    if((Layout_stop_num.index > 6)&&(!Layout_stop_num.bottom_seek_flag))
+    {
+      if(strstr(Layout_stop_num.string,"MINZ:") != NULL)
+      {
+        Layout_stop_num.bottom_seek_flag = true;
+      }
+    }
+    return;    // EOL comment or overflow
+  }
 
   #if ENABLED(PAREN_COMMENTS)
     else if (sis == PS_PAREN) { // Inline comment
@@ -542,7 +565,66 @@ void GCodeQueue::get_serial_commands() {
     } // NUM_SERIAL loop
   } // queue has space, serial has data
 }
+float read_layout_hight(char *str)
+{
+  char buff[50];
+  float ret;
+  int8_t Fraction_num[5];
+  int8_t Integer_num[5];
+  bool Fraction_flag = false;
+  char *p = str;
 
+  ZERO(buff);
+  uint8_t ii = 0;
+  uint8_t fi = 0;
+
+  // SERIAL_ECHOPGM("hei layout");
+  while (*p != '\0')
+  {
+    if((*p >= 48) && (*p < 58))
+    {
+      if(Fraction_flag)
+      {
+        Fraction_num[fi] = *p - 48;
+        fi++;
+      }
+      else
+      {
+        Integer_num[ii] = (*p-48);
+        ii++;
+
+      }
+    }
+    if(*p == '.')
+    {
+      Fraction_flag = true;
+        // SERIAL_ECHOPGM(".");
+    }
+    p++;
+  }
+  if(ii == 1)
+  {
+     if(fi == 1)
+    {
+      return (Integer_num[0] + Fraction_num[0]*0.1);
+    }
+    else if(fi == 2)
+    {
+      return (Integer_num[0] + Fraction_num[0]*0.1 + Fraction_num[1]*0.01);
+    }
+  }
+  else if(ii == 2)
+  {
+     if(fi == 1)
+    {
+      return (Integer_num[0]*10+Integer_num[1] + Fraction_num[0]*0.1);
+    }
+    else if(fi == 2)
+    {
+      return (Integer_num[0]*10+Integer_num[1] + Fraction_num[0]*0.1 + Fraction_num[1]*0.01);
+    }
+  }
+}
 #if ENABLED(SDSUPPORT)
 
   /**
@@ -567,6 +649,26 @@ void GCodeQueue::get_serial_commands() {
       const char sd_char = (char)n;
       const bool is_eol = ISEOL(sd_char);
       if (is_eol || card_eof) {
+        Layout_stop_num.index = 0;
+        if(Layout_stop_num.seek_flag)
+        {
+          Layout_stop_num.string[25] = '\0';
+          Layout_stop_num.data = read_layout_hight(Layout_stop_num.string);
+          gCfgItems.Layout_stop_data  = Layout_stop_num.data;
+          update_spi_flash();
+          Layout_stop_num.seek_flag = false;
+          Layout_stop_num.already_obtained_flag = true;
+        }
+        if(Layout_stop_num.bottom_seek_flag)
+        {
+          Layout_stop_num.string[20] = '\0';
+          Layout_stop_num.bottom_data = read_layout_hight(Layout_stop_num.string);
+          gCfgItems.Layout_stop_bottom_data  = Layout_stop_num.bottom_data;
+          update_spi_flash();
+          Layout_stop_num.bottom_seek_flag = false;
+          Layout_stop_num.bottom_already_obtained_flag = true;
+        }
+        ZERO(Layout_stop_num.string);
 
         // Reset stream state, terminate the buffer, and commit a non-empty command
         if (!is_eol && sd_count) ++sd_count;          // End of file with no newline

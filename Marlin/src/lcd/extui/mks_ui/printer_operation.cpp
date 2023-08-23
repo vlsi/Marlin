@@ -35,15 +35,21 @@
 #include "../../../MarlinCore.h"
 #include "../../../gcode/queue.h"
 
+#if ENABLED(EEPROM_SETTINGS)
+#include "../../../module/settings.h"
+#endif
 #if ENABLED(POWER_LOSS_RECOVERY)
   #include "../../../feature/powerloss.h"
 #endif
 
+uint8_t Auto_leveling_succse = 1;
 extern uint32_t To_pre_view;
-extern bool flash_preview_begin, default_preview_flg, gcode_preview_over;
+bool flash_preview_begin, default_preview_flg, gcode_preview_over;
+volatile uint8_t G29_COMMAND_FINISHED = 0;
 
 void printer_state_polling() {
   char str_1[16];
+  char str_2[16];
   if (uiCfg.print_state == PAUSING) {
     #if ENABLED(SDSUPPORT)
       if (!planner.has_blocks_queued() && card.getIndex() > MIN_FILE_PRINTED)
@@ -53,20 +59,25 @@ void printer_state_polling() {
         uiCfg.waitEndMoves = 0;
         planner.synchronize();
 
-        gcode.process_subcommands_now(F("M25"));
+        gcode.process_subcommands_now(PSTR("M25"));
 
         // save the position
         uiCfg.current_x_position_bak = current_position.x;
         uiCfg.current_y_position_bak = current_position.y;
         uiCfg.current_z_position_bak = current_position.z;
+        planner.synchronize();
 
         if (gCfgItems.pausePosZ != (float)-1) {
+          ZERO(public_buf_l);
           sprintf_P(public_buf_l, PSTR("G91\nG1 Z%s\nG90"), dtostrf(gCfgItems.pausePosZ, 1, 1, str_1));
           gcode.process_subcommands_now(public_buf_l);
+          // queue.inject(public_buf_l);
         }
         if (gCfgItems.pausePosX != (float)-1 && gCfgItems.pausePosY != (float)-1) {
-          sprintf_P(public_buf_l, PSTR("G1 X%s Y%s"), dtostrf(gCfgItems.pausePosX, 1, 1, str_1), dtostrf(gCfgItems.pausePosY, 1, 1, str_1));
+          ZERO(public_buf_l);
+          sprintf_P(public_buf_l, PSTR("G1 X%s Y%s"), dtostrf(gCfgItems.pausePosX, 1, 1, str_1), dtostrf(gCfgItems.pausePosY, 1, 1, str_2));
           gcode.process_subcommands_now(public_buf_l);
+          // queue.inject(public_buf_l);
         }
         uiCfg.print_state = PAUSED;
         uiCfg.current_e_position_bak = current_position.e;
@@ -85,7 +96,8 @@ void printer_state_polling() {
   if (uiCfg.print_state == RESUMING) {
     if (IS_SD_PAUSED()) {
       if (gCfgItems.pausePosX != (float)-1 && gCfgItems.pausePosY != (float)-1) {
-        sprintf_P(public_buf_m, PSTR("G1 X%s Y%s"), dtostrf(uiCfg.current_x_position_bak, 1, 1, str_1), dtostrf(uiCfg.current_y_position_bak, 1, 1, str_1));
+        ZERO(public_buf_m);
+        sprintf_P(public_buf_m, PSTR("G1 X%s Y%s"), dtostrf(uiCfg.current_x_position_bak, 1, 1, str_1), dtostrf(uiCfg.current_y_position_bak, 1, 1, str_2));
         gcode.process_subcommands_now(public_buf_m);
       }
       if (gCfgItems.pausePosZ != (float)-1) {
@@ -93,7 +105,7 @@ void printer_state_polling() {
         sprintf_P(public_buf_m, PSTR("G1 Z%s"), dtostrf(uiCfg.current_z_position_bak, 1, 1, str_1));
         gcode.process_subcommands_now(public_buf_m);
       }
-      gcode.process_subcommands_now(FPSTR(M24_STR));
+      gcode.process_subcommands_now((char*)M24_STR);
       uiCfg.print_state = WORKING;
       start_print_time();
 
@@ -101,9 +113,126 @@ void printer_state_polling() {
       update_spi_flash();
     }
   }
+  // if (uiCfg.print_state == PAUSING) {
+  //   #if 0
+  //   #if ENABLED(SDSUPPORT)
+  //     if (!planner.has_blocks_queued() && card.getIndex() > MIN_FILE_PRINTED)
+  //       uiCfg.waitEndMoves++;
+
+  //     if (uiCfg.waitEndMoves > 20) {
+  //       uiCfg.waitEndMoves = 0;
+  //       planner.synchronize();
+
+  //       gcode.process_subcommands_now(PSTR("M25"));
+
+  //       // save the position
+  //       uiCfg.current_x_position_bak = current_position.x;
+  //       uiCfg.current_y_position_bak = current_position.y;
+  //       uiCfg.current_z_position_bak = current_position.z;
+
+  //       if (gCfgItems.pausePosZ != (float)-1) {
+  //         sprintf_P(public_buf_l, PSTR("G91\nG1 Z%s\nG90"), dtostrf(gCfgItems.pausePosZ, 1, 1, str_1));
+  //         gcode.process_subcommands_now(public_buf_l);
+  //       }
+  //       if (gCfgItems.pausePosX != (float)-1 && gCfgItems.pausePosY != (float)-1) {
+  //         sprintf_P(public_buf_l, PSTR("G1 X%s Y%s"), dtostrf(gCfgItems.pausePosX, 1, 1, str_1), dtostrf(gCfgItems.pausePosY, 1, 1, str_1));
+  //         gcode.process_subcommands_now(public_buf_l);
+  //       }
+  //       uiCfg.print_state = PAUSED;
+  //       uiCfg.current_e_position_bak = current_position.e;
+
+  //       gCfgItems.pause_reprint = true;
+  //       update_spi_flash();
+  //     }
+  //   #endif
+  //   #else
+  //   #if ENABLED(SDSUPPORT)
+  //     if (!planner.has_blocks_queued() && card.getIndex() > MIN_FILE_PRINTED)
+  //       uiCfg.waitEndMoves++;
+
+  //     if (uiCfg.waitEndMoves > 20) {
+  //       uiCfg.waitEndMoves = 0;
+  //       planner.synchronize();
+
+  //       gcode.process_subcommands_now(PSTR("M25"));
+
+  //       // save the position
+  //       uiCfg.current_x_position_bak = current_position.x;
+  //       uiCfg.current_y_position_bak = current_position.y;
+  //       uiCfg.current_z_position_bak = current_position.z;
+  //       planner.synchronize();
+
+  //       if (gCfgItems.pausePosZ != (float)-1) {
+  //         sprintf_P(public_buf_l, PSTR("G91\nG1 Z%s\nG90"), dtostrf(gCfgItems.pausePosZ, 1, 1, str_1));
+  //         gcode.process_subcommands_now(public_buf_l);
+  //       }
+  //       if (gCfgItems.pausePosX != (float)-1 && gCfgItems.pausePosY != (float)-1) {
+  //         sprintf_P(public_buf_l, PSTR("G1 X%s Y%s"), dtostrf(gCfgItems.pausePosX, 1, 1, str_1), dtostrf(gCfgItems.pausePosY, 1, 1, str_2));
+  //         gcode.process_subcommands_now(public_buf_l);
+  //       }
+  //       uiCfg.print_state = PAUSED;
+  //       uiCfg.current_e_position_bak = current_position.e;
+
+  //       gCfgItems.pause_reprint = true;
+  //       update_spi_flash();
+  //     }
+  //   #endif
+  //   #endif
+  // }
+  // else
+  //   uiCfg.waitEndMoves = 0;
+
+  // if (uiCfg.print_state == PAUSED) {
+  // }
+
+  // if (uiCfg.print_state == RESUMING) {
+  //   #if 0
+  //   if (IS_SD_PAUSED()) {
+  //     if (gCfgItems.pausePosX != (float)-1 && gCfgItems.pausePosY != (float)-1) {
+  //       sprintf_P(public_buf_m, PSTR("G1 X%s Y%s"), dtostrf(uiCfg.current_x_position_bak, 1, 1, str_1), dtostrf(uiCfg.current_y_position_bak, 1, 1, str_1));
+  //       gcode.process_subcommands_now(public_buf_m);
+  //     }
+  //     if (gCfgItems.pausePosZ != (float)-1) {
+  //       ZERO(public_buf_m);
+  //       sprintf_P(public_buf_m, PSTR("G1 Z%s"), dtostrf(uiCfg.current_z_position_bak, 1, 1, str_1));
+  //       gcode.process_subcommands_now(public_buf_m);
+  //     }
+      
+  //     ZERO(public_buf_m);
+  //     sprintf_P(public_buf_m, PSTR("G92 E%s"),  dtostrf(uiCfg.current_e_position_bak, 1, 1, str_1));
+  //     gcode.process_subcommands_now(public_buf_m);
+
+  //     gcode.process_subcommands_now(M24_STR);
+  //     uiCfg.print_state = WORKING;
+  //     start_print_time();
+
+  //     gCfgItems.pause_reprint = false;
+  //     update_spi_flash();
+  //   }
+  //   #else
+  //   if (IS_SD_PAUSED()) {
+  //     if (gCfgItems.pausePosX != (float)-1 && gCfgItems.pausePosY != (float)-1) {
+  //       sprintf_P(public_buf_m, PSTR("G1 X%s Y%s"), dtostrf(uiCfg.current_x_position_bak, 1, 1, str_1), dtostrf(uiCfg.current_y_position_bak, 1, 1, str_2));
+  //       gcode.process_subcommands_now(public_buf_m);
+  //     }
+  //     if (gCfgItems.pausePosZ != (float)-1) {
+  //       ZERO(public_buf_m);
+  //       sprintf_P(public_buf_m, PSTR("G1 Z%s"), dtostrf(uiCfg.current_z_position_bak, 1, 1, str_1));
+  //       gcode.process_subcommands_now(public_buf_m);
+  //     }
+  //     gcode.process_subcommands_now(M24_STR);
+  //     uiCfg.print_state = WORKING;
+  //     start_print_time();
+
+  //     gCfgItems.pause_reprint = false;
+  //     update_spi_flash();
+  //   }
+  //   #endif
+  // }
   #if ENABLED(POWER_LOSS_RECOVERY)
     if (uiCfg.print_state == REPRINTED) {
       #if HAS_HOTEND
+        send_m290();
         HOTEND_LOOP() {
           const int16_t et = recovery.info.target_temperature[e];
           if (et) {
@@ -140,10 +269,39 @@ void printer_state_polling() {
     }
   #endif
 
-  if (uiCfg.print_state == WORKING)
+  if (uiCfg.print_state == WORKING && !gcode_preview_over) 
     filament_check();
 
   TERN_(MKS_WIFI_MODULE, wifi_looping());
+
+  #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
+    if (uiCfg.autoLeveling) {
+    //   get_gcode_command(AUTO_LEVELING_COMMAND_ADDR, (uint8_t *)public_buf_m);
+    //   public_buf_m[sizeof(public_buf_m) - 1] = 0;
+      gcode.process_subcommands_now(PSTR("G29\nM500"));
+    }
+  #endif
+
+
+  	if(G29_COMMAND_FINISHED == 1 && Auto_leveling_succse) {
+		G29_COMMAND_FINISHED = 0;       
+        Auto_leveling_succse = 0;
+
+		memset(public_buf_m,0,sizeof(public_buf_m));
+		sprintf((char*)public_buf_m,"G1 X%d Y%d F%d",X_BED_SIZE/2,Y_BED_SIZE/2, 1000);
+		gcode.process_subcommands_now(PSTR(public_buf_m));
+        planner.synchronize();
+
+
+        z_offset_add = 5;
+        gCfgItems.babystep_data = z_offset_add;
+        update_spi_flash();        
+        baby_step_set_data = 1;
+		gcode.process_subcommands_now("G28 Z");
+
+        clear_cur_ui();
+        lv_draw_dialog(DIALOG_TYPE_AUTO_LEVEL_FINISH);
+	}
 }
 
 void filament_pin_setup() {
@@ -203,11 +361,18 @@ void filament_check() {
     uiCfg.print_state = PAUSING;
 
     if (gCfgItems.from_flash_pic)
-      flash_preview_begin = true;
+      flash_preview_begin = false;
     else
-      default_preview_flg = true;
+      default_preview_flg = false;
 
-    lv_draw_printing();
+    if(gCfgItems.no_filament_tone)
+    {
+      voice_button_on();
+    }
+
+    // lv_draw_printing();
+    clear_cur_ui();
+    lv_draw_dialog(DIALOG_TYPE_FILAMENT_RUNOUT);
   }
 }
 

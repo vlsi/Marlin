@@ -370,10 +370,10 @@
 
 // Extra Axis and Endstop Names
 #if HAS_I_AXIS
-  #if AXIS4_NAME == 'A'
-    #define STR_I "A"
-    #define STR_I_MIN "a_min"
-    #define STR_I_MAX "a_max"
+  #if AXIS4_NAME == 'I'
+    #define STR_I "I"
+    #define STR_I_MIN "i_min"
+    #define STR_I_MAX "i_max"
   #elif AXIS4_NAME == 'B'
     #define STR_I "B"
     #define STR_I_MIN "b_min"
