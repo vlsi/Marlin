@@ -22,11 +22,13 @@
 #pragma once
 
 #ifdef __cplusplus
-  extern "C" {
+  extern "C" { /* C-declarations for C++ */
 #endif
 
 enum {
   DIALOG_TYPE_STOP = 0,
+  DIALOG_TYPE_PAUSE,
+  DIALOG_TYPE_REPRINT,
   DIALOG_TYPE_PRINT_FILE,
   DIALOG_TYPE_REPRINT_NO_FILE,
 
@@ -71,15 +73,23 @@ enum {
   DIALOG_REVERT_EEPROM_TIPS,
 
   DIALOG_WIFI_CONFIG_TIPS,
-  DIALOG_TRANSFER_NO_DEVICE
+  DIALOG_TRANSFER_NO_DEVICE,
+  DIALOG_TYPE_AUTO_LEVELING_TIPS,
+  DIALOG_TYPE_FILAMENT_RUNOUT,
+  DIALOG_TYPE_IF_ZERO,
+  DIALOG_TYPE_HOMING_WAIT,
+  DIALOG_TYPE_IF_AUTO_LEVELING,
+  DIALOG_TYPE_AUTO_LEVEL_FINISH,
+  DIALOG_TYPE_PROBING_FAILED,
 };
+extern float z_offset_add;
 
 void lv_draw_dialog(uint8_t type);
 void lv_clear_dialog();
 void filament_sprayer_temp();
 void filament_dialog_handle();
 void lv_filament_setbar();
-
+void start_printing();
 #ifdef __cplusplus
   } /* C-declarations for C++ */
 #endif

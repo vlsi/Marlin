@@ -159,7 +159,7 @@ class PrintJobRecovery {
         #elif ENABLED(POWER_LOSS_PULLDOWN)
           SET_INPUT_PULLDOWN(POWER_LOSS_PIN);
         #else
-          SET_INPUT(POWER_LOSS_PIN);
+           SET_INPUT(POWER_LOSS_PIN);
         #endif
       #endif
     }

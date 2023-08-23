@@ -22,7 +22,7 @@
 #pragma once
 
 #ifdef __cplusplus
-  extern "C" {
+  extern "C" { /* C-declarations for C++ */
 #endif
 
 void lv_draw_ready_print();
@@ -33,6 +33,10 @@ void disp_det_error();
 void disp_det_ok();
 void lv_clear_ready_print();
 void lv_temp_refr();
+
+void set_main_screen(void);
+void lv_draw_emergemcy();
+void disp_emergency();
 
 #ifdef __cplusplus
   } /* C-declarations for C++ */

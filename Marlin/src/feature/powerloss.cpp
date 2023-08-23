@@ -27,7 +27,7 @@
 #include "../inc/MarlinConfigPre.h"
 
 #if ENABLED(POWER_LOSS_RECOVERY)
-
+bool recoveryed_flag = false;
 #include "powerloss.h"
 #include "../core/macros.h"
 
@@ -153,6 +153,7 @@ void PrintJobRecovery::prepare() {
 /**
  * Save the current machine state to the power-loss recovery file
  */
+
 void PrintJobRecovery::save(const bool force/*=false*/, const float zraise/*=POWER_LOSS_ZRAISE*/, const bool raised/*=false*/) {
 
   // We don't check IS_SD_PRINTING here so a save may occur during a pause
@@ -176,7 +177,6 @@ void PrintJobRecovery::save(const bool force/*=false*/, const float zraise/*=POW
       || current_position.z > info.current_position.z + POWER_LOSS_MIN_Z_CHANGE
     #endif
   ) {
-
     #if SAVE_INFO_INTERVAL_MS > 0
       next_save_ms = ms + SAVE_INFO_INTERVAL_MS;
     #endif
@@ -188,7 +188,7 @@ void PrintJobRecovery::save(const bool force/*=false*/, const float zraise/*=POW
 
     // Machine state
     // info.sdpos and info.current_position are pre-filled from the Stepper ISR
-
+    info.current_position = current_position;   //冯工
     info.feedrate = uint16_t(MMS_TO_MMM(feedrate_mm_s));
     info.zraise = zraise;
     info.flag.raised = raised;                      // Was Z raised before power-off?

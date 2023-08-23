@@ -450,11 +450,16 @@ void Endstops::not_homing() {
   enabled = enabled_globally;
 }
 
+extern bool Emergemcy_flog; //冯工
 #if ENABLED(VALIDATE_HOMING_ENDSTOPS)
   // If the last move failed to trigger an endstop, call kill
   void Endstops::validate_homing_move() {
     if (trigger_state()) hit_on_purpose();
-    else kill(GET_TEXT_F(MSG_KILL_HOMING_FAILED));
+    else 
+    {
+        if(Emergemcy_flog) return;  //冯工
+        kill(GET_TEXT_F(MSG_KILL_HOMING_FAILED));
+    }
   }
 #endif
 

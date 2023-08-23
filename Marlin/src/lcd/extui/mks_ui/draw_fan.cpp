@@ -55,9 +55,11 @@ static void event_handler(lv_obj_t *obj, lv_event_t event) {
     case ID_F_HIGH: fanPercent = 100; break;
     case ID_F_MID:  fanPercent =  50; break;
     case ID_F_OFF:  fanPercent =   0; break;
-    case ID_F_RETURN: goto_previous_ui(); return;
+    case ID_F_RETURN: clear_cur_ui(); draw_return_ui(); return;
   }
+
   thermalManager.set_fan_speed(0, map(fanPercent, 0, 100, 0, 255));
+  
   if (obj->mks_obj_id != ID_F_RETURN) disp_fan_value();
 }
 
@@ -73,10 +75,15 @@ void lv_draw_fan() {
   lv_big_button_create(scr, "F:/bmp_speed127.bin", fan_menu.half, BTN_X_PIXEL + INTERVAL_V * 2, BTN_Y_PIXEL + INTERVAL_H + titleHeight, event_handler, ID_F_MID);
   lv_big_button_create(scr, "F:/bmp_speed0.bin", fan_menu.off, BTN_X_PIXEL * 2 + INTERVAL_V * 3, BTN_Y_PIXEL + INTERVAL_H + titleHeight, event_handler, ID_F_OFF);
   lv_big_button_create(scr, "F:/bmp_return.bin", common_menu.text_back, BTN_X_PIXEL * 3 + INTERVAL_V * 4, BTN_Y_PIXEL + INTERVAL_H + titleHeight, event_handler, ID_F_RETURN);
+  // lv_big_button_create(scr, "F:/bmp_speed0.bin", fan_menu.off, 10, 10, event_handler, ID_F_OFF);
+  lv_refr_now(lv_refr_get_disp_refreshing());
 
   fanText = lv_label_create_empty(scr);
-  lv_obj_set_style(fanText, &tft_style_label_rel);
+  // lv_obj_set_style(fanText, &tft_style_label_rel);
   disp_fan_value();
+
+  lv_refr_now(lv_refr_get_disp_refreshing());
+  lv_imgbtn_set_src_both(buttonAdd , "F:/bmp_Add.bin");
 }
 
 void disp_fan_value() {
@@ -86,7 +93,9 @@ void disp_fan_value() {
     sprintf_P(public_buf_l, PSTR("%s: ---"), fan_menu.state);
   #endif
   lv_label_set_text(fanText, public_buf_l);
+  lv_label_set_style(fanText, LV_LABEL_STYLE_MAIN, &tft_style_preHeat_label);
   lv_obj_align(fanText, nullptr, LV_ALIGN_CENTER, 0, -65);
+  lv_refr_now(lv_refr_get_disp_refreshing());
 }
 
 void lv_clear_fan() {

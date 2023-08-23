@@ -112,6 +112,7 @@ void MarlinHAL::idletask() {
   #endif
 }
 
+void _delay_ms(int delay_ms) { hal.delay_ms(delay_ms); }    //冯工
 void MarlinHAL::reboot() { NVIC_SystemReset(); }
 
 uint8_t MarlinHAL::get_reset_source() {
@@ -177,6 +178,16 @@ void systick_attach_callback(systickCallback_t cb) { systick_user_callback = cb;
 void HAL_SYSTICK_Callback() {
   systick_uptime_millis++;
   if (systick_user_callback) systick_user_callback();
+}
+
+//冯工
+bool ret_e_dir_odr()
+{
+  return (GPIOD->ODR & GPIO_PIN_3);
+}
+void set_e_dir_odr()
+{
+  GPIOD->ODR |= GPIO_PIN_3;
 }
 
 #endif // HAL_STM32

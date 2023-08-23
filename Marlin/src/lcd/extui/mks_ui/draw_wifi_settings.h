@@ -22,7 +22,7 @@
 #pragma once
 
 #ifdef __cplusplus
-  extern "C" {
+  extern "C" { /* C-declarations for C++ */
 #endif
 
 #define WIFI_AP_TEXT  "AP"

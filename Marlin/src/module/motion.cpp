@@ -32,7 +32,7 @@
 #include "../gcode/gcode.h"
 #include "../lcd/marlinui.h"
 #include "../inc/MarlinConfig.h"
-
+#include "../lcd/extui/mks_ui/draw_ui.h"
 #if IS_SCARA
   #include "../libs/buzzer.h"
   #include "../lcd/marlinui.h"
@@ -1934,8 +1934,14 @@ void prepare_line_to_destination() {
    * before updating the current position.
    */
 
+  extern bool Emergemcy_flog;
   void homeaxis(const AxisEnum axis) {
-
+    if(axis == I_AXIS) 
+    {
+        // set_axis_is_at_home(I_AXIS);
+        return;  //冯工
+    }
+    if(Emergemcy_flog) return;  //冯工
     #if EITHER(MORGAN_SCARA, MP_SCARA)
       // Only Z homing (with probe) is permitted
       if (axis != Z_AXIS) { BUZZ(100, 880); return; }
@@ -1950,7 +1956,7 @@ void prepare_line_to_destination() {
       if (true MAIN_AXIS_MAP(_ANDCANT)) return;
     #endif
 
-    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM(">>> homeaxis(", AS_CHAR(AXIS_CHAR(axis)), ")");
+    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM(">>> homeaxis(", AS_CHAR(AXIS_CHAR(axis)), ")"); 
 
     const int axis_home_dir = TERN0(DUAL_X_CARRIAGE, axis == X_AXIS)
                 ? TOOL_X_HOME_DIR(active_extruder) : home_dir(axis);
@@ -1990,6 +1996,7 @@ void prepare_line_to_destination() {
       if ((TERN0(X_SENSORLESS, axis == X_AXIS) || TERN0(Y_SENSORLESS, axis == Y_AXIS) || TERN0(Z_SENSORLESS, axis == Z_AXIS) || TERN0(I_SENSORLESS, axis == I_AXIS) || TERN0(J_SENSORLESS, axis == J_AXIS) || TERN0(K_SENSORLESS, axis == K_AXIS)) && backoff[axis]) {
         const float backoff_length = -ABS(backoff[axis]) * axis_home_dir;
         if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Sensorless backoff: ", backoff_length, "mm");
+        if(Emergemcy_flog) return;  //冯工
         do_homing_move(axis, backoff_length, homing_feedrate(axis));
       }
     #endif
@@ -2006,6 +2013,7 @@ void prepare_line_to_destination() {
     //
     const float move_length = 1.5f * max_length(TERN(DELTA, Z_AXIS, axis)) * axis_home_dir;
     if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Home Fast: ", move_length, "mm");
+    if(Emergemcy_flog) return;  //冯工
     do_homing_move(axis, move_length, 0.0, !use_probe_bump);
 
     #if BOTH(HOMING_Z_WITH_PROBE, BLTOUCH)
@@ -2016,6 +2024,7 @@ void prepare_line_to_destination() {
     if (bump) {
       // Move away from the endstop by the axis HOMING_BUMP_MM
       if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Move Away: ", -bump, "mm");
+      if(Emergemcy_flog) return;  //冯工
       do_homing_move(axis, -bump, TERN(HOMING_Z_WITH_PROBE, (axis == Z_AXIS ? z_probe_fast_mm_s : 0), 0), false);
 
       #if ENABLED(DETECT_BROKEN_ENDSTOP)
@@ -2063,6 +2072,7 @@ void prepare_line_to_destination() {
       // Slow move towards endstop until triggered
       const float rebump = bump * 2;
       if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Re-bump: ", rebump, "mm");
+      if(Emergemcy_flog) return;  //冯工
       do_homing_move(axis, rebump, get_homing_bump_feedrate(axis), true);
 
       #if BOTH(HOMING_Z_WITH_PROBE, BLTOUCH)
@@ -2103,6 +2113,7 @@ void prepare_line_to_destination() {
             const float adj = ABS(endstops.z2_endstop_adj);
             if (adj) {
               if (pos_dir ? (endstops.z2_endstop_adj > 0) : (endstops.z2_endstop_adj < 0)) stepper.set_z1_lock(true); else stepper.set_z2_lock(true);
+              if(Emergemcy_flog) return;  //冯工
               do_homing_move(axis, pos_dir ? -adj : adj);
               stepper.set_z1_lock(false);
               stepper.set_z2_lock(false);
@@ -2352,6 +2363,10 @@ void set_axis_is_at_home(const AxisEnum axis) {
     #endif
     DEBUG_POS("", current_position);
     DEBUG_ECHOLNPGM("<<< set_axis_is_at_home(", AS_CHAR(AXIS_CHAR(axis)), ")");
+  }
+  if(axis == Z_AXIS)
+  {
+      TERN_(BABYSTEP_DISPLAY_TOTAL, send_m290());
   }
 }
 

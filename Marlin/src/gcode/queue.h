@@ -265,6 +265,21 @@ private:
   friend class GcodeSuite;
 };
 
+
+typedef struct{
+  float bottom_data;
+  float data;
+  char string[25];
+  uint8_t index = 0;
+  bool seek_flag = false;
+  bool bottom_seek_flag = false;
+  bool already_obtained_flag = false;
+  bool bottom_already_obtained_flag = false;
+
+}Layout_stop_t;
+
+extern Layout_stop_t Layout_stop_num;
+
 extern GCodeQueue queue;
 
 extern const char G28_STR[];

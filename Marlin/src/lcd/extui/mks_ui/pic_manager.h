@@ -113,6 +113,10 @@
   #define UNIGBK_FLASH_ADDR            (FONTINFOADDR + 4096) // 4*1024
   #define GBK_FLASH_ADDR               (UNIGBK_FLASH_ADDR + 180224) // 176*1024
 
+  #define FONTINFOADDR_2                  0x700000 // 7M -- font addr
+  #define UNIGBK_FLASH_ADDR_2            (FONTINFOADDR_2 + 4096) // 4*1024
+  #define GBK_FLASH_ADDR_2               (UNIGBK_FLASH_ADDR_2 + 180224) // 176*1024
+
 #endif
 
 // Flash flag
@@ -120,9 +124,9 @@
 
 // SD card information first addr
 #define VAR_INF_ADDR                    0x000000
-#define FLASH_INF_VALID_FLAG            0x20201118
+#define FLASH_INF_VALID_FLAG            0x20221121
 
-// Store some G-code commands, such as auto-leveling commands
+// Store some gcode commands, such as auto leveling commands
 #define GCODE_COMMAND_ADDR              VAR_INF_ADDR + 3 * 1024
 #define AUTO_LEVELING_COMMAND_ADDR      GCODE_COMMAND_ADDR
 #define OTHERS_COMMAND_ADDR_1           AUTO_LEVELING_COMMAND_ADDR + 100
@@ -131,7 +135,7 @@
 #define OTHERS_COMMAND_ADDR_4           OTHERS_COMMAND_ADDR_3 + 100
 
 #ifdef __cplusplus
-  extern "C" {
+  extern "C" { /* C-declarations for C++ */
 #endif
 
 union union32 {
@@ -159,6 +163,7 @@ void Pic_Logo_Read(uint8_t *LogoName, uint8_t *Logo_Rbuff, uint32_t LogoReadsize
 void lv_pic_test(uint8_t *P_Rbuff, uint32_t addr, uint32_t size);
 uint32_t lv_get_pic_addr(uint8_t *Pname);
 void get_spi_flash_data(const char *rec_buf, int offset, int size);
+void get_spi_flash_data_2(const char *rec_buf, int addr, int size);
 void spi_flash_read_test();
 void default_view_Read(uint8_t *default_view_Rbuff, uint32_t default_view_Readsize);
 void flash_view_Read(uint8_t *flash_view_Rbuff, uint32_t flash_view_Readsize);

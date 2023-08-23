@@ -67,7 +67,10 @@
  * With BABYSTEP_ZPROBE_OFFSET:
  *  P0 - Don't adjust the Z probe offset
  */
+extern bool baby_step_set_data;
+
 void GcodeSuite::M290() {
+    
   #if ENABLED(BABYSTEP_XY)
     LOOP_NUM_AXES(a)
       if (parser.seenval(AXIS_CHAR(a)) || (a == Z_AXIS && parser.seenval('S'))) {
@@ -78,8 +81,9 @@ void GcodeSuite::M290() {
         #endif
       }
   #else
+    float offs;
     if (parser.seenval('Z') || parser.seenval('S')) {
-      const float offs = constrain(parser.value_axis_units(Z_AXIS), -2, 2);
+      offs = parser.value_axis_units(Z_AXIS);
       babystep.add_mm(Z_AXIS, offs);
       #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
         if (parser.boolval('P', true)) mod_probe_offset(offs);

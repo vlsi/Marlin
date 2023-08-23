@@ -22,10 +22,11 @@
 #pragma once
 
 #ifdef __cplusplus
-  extern "C" {
+  extern "C" { /* C-declarations for C++ */
 #endif
 
 void lv_draw_keyboard();
+void lv_draw_numkeyboard();
 void lv_clear_keyboard();
 
 #ifdef __cplusplus

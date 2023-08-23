@@ -52,7 +52,7 @@ void TFT_SPI::Init() {
   SPIx.Init.NSS                = SPI_NSS_SOFT;
   SPIx.Init.Mode               = SPI_MODE_MASTER;
   SPIx.Init.Direction          = (TFT_MISO_PIN == TFT_MOSI_PIN) ? SPI_DIRECTION_1LINE : SPI_DIRECTION_2LINES;
-  SPIx.Init.BaudRatePrescaler  = SPI_BAUDRATEPRESCALER_2;
+  SPIx.Init.BaudRatePrescaler  = SPI_BAUDRATEPRESCALER_16;
   SPIx.Init.CLKPhase           = SPI_PHASE_1EDGE;
   SPIx.Init.CLKPolarity        = SPI_POLARITY_LOW;
   SPIx.Init.DataSize           = SPI_DATASIZE_8BIT;
@@ -79,7 +79,7 @@ void TFT_SPI::Init() {
         DMAtx.Instance = DMA2_Stream3;
         DMAtx.Init.Channel = DMA_CHANNEL_3;
       #endif
-      SPIx.Init.BaudRatePrescaler  = SPI_BAUDRATEPRESCALER_4;
+      SPIx.Init.BaudRatePrescaler  = SPI_BAUDRATEPRESCALER_2;
     }
   #endif
   #ifdef SPI2_BASE
@@ -124,6 +124,7 @@ void TFT_SPI::Init() {
 
 void TFT_SPI::DataTransferBegin(uint16_t DataSize) {
   SPIx.Init.DataSize = DataSize == DATASIZE_8BIT ?  SPI_DATASIZE_8BIT : SPI_DATASIZE_16BIT;
+  HAL_SPI_DeInit(&SPIx);    // fix-wang-2022-11-14   // fix for GD32F407VE
   HAL_SPI_Init(&SPIx);
   WRITE(TFT_CS_PIN, LOW);
 }

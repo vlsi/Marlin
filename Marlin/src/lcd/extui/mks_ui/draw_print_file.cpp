@@ -34,11 +34,13 @@
 #include "../../../sd/cardreader.h"
 #include "../../../inc/MarlinConfig.h"
 
+#ifndef USE_NEW_LVGL_CONF
 static lv_obj_t *scr;
+#endif
 extern lv_group_t*  g;
 
 static lv_obj_t *buttonPageUp, *buttonPageDown, *buttonBack,
-                *buttonGcode[FILE_BTN_CNT], *labelPageUp[FILE_BTN_CNT], *buttonText[FILE_BTN_CNT];
+                *buttonGcode[FILE_BTN_CNT], *labelPageUp[FILE_BTN_CNT], *buttonText[FILE_BTN_CNT] , *imgGcode[FILE_BTN_CNT];
 
 enum {
   ID_P_UP = 7,
@@ -54,6 +56,56 @@ extern uint8_t public_buf[513];
 extern char public_buf_m[100];
 
 uint8_t sel_id = 0;
+
+// fix wang
+uint16_t lv_longFilename[FILENAME_LENGTH * MAX_VFAT_ENTRIES + 1]; 
+/*
+Unicode      		|        UTF-8
+Hexadecimal      	|        Binary
+--------------------------+---------------------------------------------
+0000 0000-0000 007F | 0xxxxxxx
+0000 0080-0000 07FF | 110xxxxx 10xxxxxx
+0000 0800-0000 FFFF | 1110xxxx 10xxxxxx 10xxxxxx
+0001 0000-0010 FFFF | 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+*/
+void unicode_2_utf8(char *des, uint16_t *source, uint8_t Len) {
+	uint8_t FileName_UTF8[30];
+	ZERO(FileName_UTF8);
+	LOOP_L_N(i, Len) {
+		if(0 <= source[i] && source[i] <= 0x7F) {
+			// 0xxxxxxx
+			*des = (source[i] & 0x7F);
+			des++;  
+		}
+		else if(0X80 <= source[i] && source[i] <= 0x7FF) {
+			// 110xxxxx 10xxxxxx
+			*(des+1) = (source[i] & 0x3F) | 0x80;  
+        	*des     = ((source[i] >> 6) & 0x1F) | 0xC0;
+			des 	 += 2;
+		}
+		else if(0X800 <= source[i] && source[i] <= 0xFFFF) {
+			// 1110xxxx 10xxxxxx 10xxxxxx
+			*(des+2) = (source[i] & 0x3F) | 0x80;  
+        	*(des+1) = ((source[i] >>  6) & 0x3F) | 0x80;  
+        	*des     = ((source[i] >> 12) & 0x0F) | 0xE0;
+			des 	 += 3;
+		}
+		else if(0X10000 <= source[i] && source[i] <= 0x10FFFF) {
+			// 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+			*(des+3) = (source[i] & 0x3F) | 0x80;  
+			*(des+2) = ((source[i] >>  6) & 0x3F) | 0x80;  
+			*(des+1) = ((source[i] >> 12) & 0x3F) | 0x80;  
+			*des     = ((source[i] >> 18) & 0x07) | 0xF0; 
+      		des 	 += 4;
+		}
+		else {
+			break; //Out of range
+		}
+	}
+}
+
+
+
 
 #if ENABLED(SDSUPPORT)
 
@@ -82,7 +134,18 @@ uint8_t sel_id = 0;
         strcpy(list_file.file_name[valid_name_cnt], list_file.curDirPath);
         strcat_P(list_file.file_name[valid_name_cnt], PSTR("/"));
         strcat(list_file.file_name[valid_name_cnt], card.filename);
-        strcpy(list_file.long_name[valid_name_cnt], card.longest_filename());
+        // strcpy(list_file.long_name[valid_name_cnt], card.longest_filename());
+
+        ZERO(list_file.long_name[valid_name_cnt]);
+        if (lv_longFilename[0] == 0)
+				  strncpy(list_file.long_name[valid_name_cnt], card.filename, strlen(card.filename));
+				else {
+					//chinese is 3 byte, ascii is 1 byte
+					//max chinese: (sizeof(list_file.long_name[valid_name_cnt]) - strlen(".gcode") - 1) / 3 = (53 - 6 - 1) / 3 = 15
+					//max ascii: (sizeof(list_file.long_name[valid_name_cnt]) - strlen(".gcode") - 1) = 53 -6 - 1 = 46
+					unicode_2_utf8(list_file.long_name[valid_name_cnt], lv_longFilename, FILENAME_LENGTH * MAX_VFAT_ENTRIES);
+					list_file.long_name[valid_name_cnt][SHORT_NAME_LEN * 4] = '\0';
+				}
 
         valid_name_cnt++;
         if (valid_name_cnt == 1)
@@ -105,6 +168,7 @@ uint8_t sel_id = 0;
 bool have_pre_pic(char *path) {
   #if ENABLED(SDSUPPORT)
     char *ps1, *ps2, *cur_name = strrchr(path, '/');
+    cur_name++;
     card.openFileRead(cur_name);
     card.read(public_buf, 512);
     ps1 = strstr((char *)public_buf, ";simage:");
@@ -122,6 +186,10 @@ static void event_handler(lv_obj_t *obj, lv_event_t event) {
   uint8_t i, file_count = 0;
   //switch (obj->mks_obj_id)
   //{
+  voice_button_on();
+  _delay_ms(100);
+  WRITE(BEEPER_PIN, LOW); 
+
   if (obj->mks_obj_id == ID_P_UP) {
     if (dir_offset[curDirLever].curPage > 0) {
       // 2015.05.19
@@ -177,9 +245,13 @@ static void event_handler(lv_obj_t *obj, lv_event_t event) {
       }
     }
     else {
-      lv_clear_print_file();
-      TERN(MULTI_VOLUME, lv_draw_media_select(), lv_draw_ready_print());
+      clear_cur_ui();
+      lv_draw_ready_print();
+      // lv_clear_print_file();
+      // TERN(MULTI_VOLUME, lv_draw_media_select(), lv_draw_ready_print());
     }
+    // clear_cur_ui();
+    // draw_return_ui();
   }
   else {
     for (i = 0; i < FILE_BTN_CNT; i++) {
@@ -208,7 +280,7 @@ static void event_handler(lv_obj_t *obj, lv_event_t event) {
 }
 
 void lv_draw_print_file() {
-  //uint8_t i;
+
   uint8_t file_count;
 
   curDirLever = 0;
@@ -227,35 +299,32 @@ void lv_draw_print_file() {
     file_count = search_file();
   #endif
   disp_gcode_icon(file_count);
-
-  //lv_obj_t *labelPageUp = lv_label_create_empty(buttonPageUp);
-  //lv_obj_t *labelPageDown = lv_label_create_empty(buttonPageDown);
-  //lv_obj_t *label_Back = lv_label_create_empty(buttonBack);
-
-  /*
-  if (gCfgItems.multiple_language) {
-    lv_label_set_text(labelPageUp, tool_menu.preheat);
-    lv_obj_align(labelPageUp, buttonPageUp, LV_ALIGN_IN_BOTTOM_MID,0, BUTTON_TEXT_Y_OFFSET);
-
-    lv_label_set_text(labelPageDown, tool_menu.extrude);
-    lv_obj_align(labelPageDown, buttonPageDown, LV_ALIGN_IN_BOTTOM_MID,0, BUTTON_TEXT_Y_OFFSET);
-
-    lv_label_set_text(label_Back, common_menu.text_back);
-    lv_obj_align(label_Back, buttonBack, LV_ALIGN_IN_BOTTOM_MID,0, BUTTON_TEXT_Y_OFFSET);
-  }
-  */
 }
-static char test_public_buf_l[40];
+// static char test_public_buf_l[40];
+static char test_public_buf_l[(SHORT_NAME_LEN + 1) * MAX_DIR_LEVEL + strlen("S:/") + 1];
+
 void disp_gcode_icon(uint8_t file_num) {
   uint8_t i;
+  uint8_t n = 0, m = 0;
+  // uint16_t fileCnt;
 
   // TODO: set current media title?!
+#ifndef USE_NEW_LVGL_CONF
   scr = lv_screen_create(PRINT_FILE_UI, "");
+#else 
+  mks_ui.src_main = lv_set_scr_id_title(mks_ui.src_main, PRINT_FILE_UI, "");
+#endif
 
   // Create image buttons
-  buttonPageUp   = lv_imgbtn_create(scr, "F:/bmp_pageUp.bin", OTHER_BTN_XPIEL * 3 + INTERVAL_V * 4, titleHeight, event_handler, ID_P_UP);
-  buttonPageDown = lv_imgbtn_create(scr, "F:/bmp_pageDown.bin", OTHER_BTN_XPIEL * 3 + INTERVAL_V * 4, titleHeight + OTHER_BTN_YPIEL + INTERVAL_H, event_handler, ID_P_DOWN);
-  buttonBack     = lv_imgbtn_create(scr, "F:/bmp_back.bin", OTHER_BTN_XPIEL * 3 + INTERVAL_V * 4, titleHeight + OTHER_BTN_YPIEL * 2 + INTERVAL_H * 2, event_handler, ID_P_RETURN);
+#ifndef USE_NEW_LVGL_CONF
+  // buttonPageUp   = lv_imgbtn_create(scr, "F:/bmp_pageUp.bin", OTHER_BTN_XPIEL * 3 + INTERVAL_V * 4, titleHeight, event_handler, ID_P_UP);
+  // buttonPageDown = lv_imgbtn_create(scr, "F:/bmp_pageDown.bin", OTHER_BTN_XPIEL * 3 + INTERVAL_V * 4, titleHeight + OTHER_BTN_YPIEL + INTERVAL_H, event_handler, ID_P_DOWN);
+  // buttonBack     = lv_imgbtn_create(scr, "F:/bmp_back.bin", OTHER_BTN_XPIEL * 3 + INTERVAL_V * 4, titleHeight + OTHER_BTN_YPIEL * 2 + INTERVAL_H * 2, event_handler, ID_P_RETURN);
+#else 
+  buttonPageUp   = lv_imgbtn_create(mks_ui.src_main, "F:/bmp_pageUp.bin", OTHER_BTN_XPIEL * 3 + INTERVAL_V * 4, titleHeight, event_handler, ID_P_UP);
+  buttonPageDown = lv_imgbtn_create(mks_ui.src_main, "F:/bmp_pageDown.bin", OTHER_BTN_XPIEL * 3 + INTERVAL_V * 4, titleHeight + OTHER_BTN_YPIEL + INTERVAL_H, event_handler, ID_P_DOWN);
+  buttonBack     = lv_imgbtn_create(mks_ui.src_main, "F:/bmp_back.bin", OTHER_BTN_XPIEL * 3 + INTERVAL_V * 4, titleHeight + OTHER_BTN_YPIEL * 2 + INTERVAL_H * 2, event_handler, ID_P_RETURN);
+#endif
 
   // Create labels on the image buttons
   for (i = 0; i < FILE_BTN_CNT; i++) {
@@ -272,90 +341,200 @@ void disp_gcode_icon(uint8_t file_num) {
     if (i >= file_num) break;
 
     #ifdef TFT35
-      buttonGcode[i] = lv_imgbtn_create(scr, nullptr);
+  #ifndef USE_NEW_LVGL_CONF
+      // buttonGcode[i] = lv_imgbtn_create(scr, nullptr);
+      buttonGcode[i] = lv_btn_create(scr, nullptr);
+      imgGcode[i] = lv_img_create(scr, nullptr);
+  #else
+      buttonGcode[i] = lv_imgbtn_create(mks_ui.src_main, nullptr);
+  #endif
 
       lv_imgbtn_use_label_style(buttonGcode[i]);
       lv_obj_clear_protect(buttonGcode[i], LV_PROTECT_FOLLOW);
       lv_btn_set_layout(buttonGcode[i], LV_LAYOUT_OFF);
 
       ZERO(public_buf_m);
-      cutFileName((char *)list_file.long_name[i], 16, 8, (char *)public_buf_m);
-
+      cutFileName((char *)list_file.long_name[i], 16, 16, (char *)public_buf_m);
+      // fileCnt = card.get_num_Files();
+      // card.getfilename_sorted(SD_ORDER(i, fileCnt));
+      // list_file.IsFolder[i] = card.flag.filenameIsDir;
       if (list_file.IsFolder[i]) {
+        char *cur_name;
+        cur_name = strrchr(list_file.file_name[i], '/');
+        cur_name++;
+        SdFile file, *curDir;
+        uint32_t temp;
+        card.abortFilePrintNow();
+        const char * const fname = card.diveToFile(false, curDir, cur_name);
+        if (!fname) break;
+        if (file.open(curDir, fname, O_READ)) {
+          if(!file.isDir())
+          { 
+            list_file.IsFolder[i] = false;
+          }
+          file.close();
+        }
         lv_obj_set_event_cb_mks(buttonGcode[i], event_handler, (i + 1), "", 0);
-        lv_imgbtn_set_src_both(buttonGcode[i], "F:/bmp_dir.bin");
-        if (i < 3)
-          lv_obj_set_pos(buttonGcode[i], BTN_X_PIXEL * i + INTERVAL_V * (i + 1), titleHeight);
-        else
-          lv_obj_set_pos(buttonGcode[i], BTN_X_PIXEL * (i - 3) + INTERVAL_V * ((i - 3) + 1), BTN_Y_PIXEL + INTERVAL_H + titleHeight);
+        lv_img_set_src(imgGcode[i], "F:/bmp_file.bin");
+        lv_obj_set_size(buttonGcode[i], 200, 50);
+        // if (i < 3)
+        //   lv_obj_set_pos(buttonGcode[i], BTN_X_PIXEL * i + INTERVAL_V * (i + 1), titleHeight);
+        // else
+        //   lv_obj_set_pos(buttonGcode[i], BTN_X_PIXEL * (i - 3) + INTERVAL_V * ((i - 3) + 1), BTN_Y_PIXEL + INTERVAL_H + titleHeight);
 
-        labelPageUp[i] = lv_label_create(buttonGcode[i], public_buf_m);
-        lv_obj_align(labelPageUp[i], buttonGcode[i], LV_ALIGN_IN_BOTTOM_MID, 0, -5);
+        if (i % 2 == 0)
+        {
+          lv_obj_set_pos(buttonGcode[i], 15, 70 + 50 * n);
+          n++;
+        }
+        else
+        {
+          lv_obj_set_pos(buttonGcode[i], 258, 70 + 50 * m);
+          m++;
+        }
+
+        lv_obj_align(imgGcode[i], buttonGcode[i] , LV_ALIGN_IN_TOP_LEFT, 0, 0);
+
+        labelPageUp[i] = lv_label_create(scr, public_buf_m);
+        lv_label_set_style(labelPageUp[i], LV_LABEL_STYLE_MAIN, &tft_style_preHeat_label);
+        lv_obj_align(labelPageUp[i], imgGcode[i], LV_ALIGN_OUT_RIGHT_MID, 0, 0);
+        
+        // lv_refr_now(lv_refr_get_disp_refreshing());
       }
       else {
         if (have_pre_pic((char *)list_file.file_name[i])) {
 
           //lv_obj_set_event_cb_mks(buttonGcode[i], event_handler, (i + 1), list_file.file_name[i], 1);
+          memset(test_public_buf_l, 0, sizeof(test_public_buf_l));
+          memset(buttonGcode[i]->mks_pic_name, 0, sizeof(buttonGcode[i]->mks_pic_name));
 
           strcpy(test_public_buf_l, "S:");
           strcat(test_public_buf_l, list_file.file_name[i]);
           char *temp = strstr(test_public_buf_l, ".GCO");
           if (temp) strcpy(temp, ".bin");
-          lv_obj_set_event_cb_mks(buttonGcode[i], event_handler, (i + 1), test_public_buf_l, 0);
-          lv_imgbtn_set_src_both(buttonGcode[i], buttonGcode[i]->mks_pic_name);
-          if (i < 3) {
-            lv_obj_set_pos(buttonGcode[i], BTN_X_PIXEL * i + INTERVAL_V * (i + 1) + FILE_PRE_PIC_X_OFFSET, titleHeight + FILE_PRE_PIC_Y_OFFSET);
-            buttonText[i] = lv_btn_create(scr, nullptr);
-            //lv_obj_set_event_cb(buttonText[i], event_handler);
+          lv_obj_set_event_cb_mks(buttonGcode[i], event_handler, (i + 1), "", 0);
+          lv_img_set_src(imgGcode[i], "F:/bmp_file.bin");
+          lv_obj_set_size(buttonGcode[i], 200, 50);
+          // lv_obj_set_event_cb_mks(buttonGcode[i], event_handler, (i + 1), test_public_buf_l, 0);
+          // lv_imgbtn_set_src_both(buttonGcode[i], buttonGcode[i]->mks_pic_name);
+          
+          if (i % 2 == 0)//if (i < 3) 
+          {
+            // lv_obj_set_pos(buttonGcode[i], BTN_X_PIXEL * i + INTERVAL_V * (i + 1) + FILE_PRE_PIC_X_OFFSET, titleHeight + FILE_PRE_PIC_Y_OFFSET);
+            lv_obj_set_pos(buttonGcode[i], 15, 70 + 50 * n);
+            n++;
+// #ifndef USE_NEW_LVGL_CONF
+//             buttonText[i] = lv_btn_create(scr, nullptr);
+// #else
+//             buttonText[i] = lv_btn_create(mks_ui.src_main, nullptr);
+// #endif
+//             //lv_obj_set_event_cb(buttonText[i], event_handler);
 
-            lv_btn_use_label_style(buttonText[i]);
-            lv_obj_clear_protect(buttonText[i], LV_PROTECT_FOLLOW);
-            lv_btn_set_layout(buttonText[i], LV_LAYOUT_OFF);
-            //lv_obj_set_event_cb_mks(buttonText[i], event_handler,(i+10),"", 0);
-            lv_obj_set_pos(buttonText[i], BTN_X_PIXEL * i + INTERVAL_V * (i + 1) + FILE_PRE_PIC_X_OFFSET, titleHeight + FILE_PRE_PIC_Y_OFFSET + 100);
-            lv_obj_set_size(buttonText[i], 100, 40);
+//             lv_btn_use_label_style(buttonText[i]);
+//             lv_obj_clear_protect(buttonText[i], LV_PROTECT_FOLLOW);
+//             lv_btn_set_layout(buttonText[i], LV_LAYOUT_OFF);
+//             //lv_obj_set_event_cb_mks(buttonText[i], event_handler,(i+10),"", 0);
+//             lv_obj_set_pos(buttonText[i], BTN_X_PIXEL * i + INTERVAL_V * (i + 1) + FILE_PRE_PIC_X_OFFSET, titleHeight + FILE_PRE_PIC_Y_OFFSET + 100);
+//             lv_obj_set_size(buttonText[i], 100, 40);
           }
           else {
-            lv_obj_set_pos(buttonGcode[i], BTN_X_PIXEL * (i - 3) + INTERVAL_V * ((i - 3) + 1) + FILE_PRE_PIC_X_OFFSET, BTN_Y_PIXEL + INTERVAL_H + titleHeight + FILE_PRE_PIC_Y_OFFSET);
-            buttonText[i] = lv_btn_create(scr, nullptr);
-            //lv_obj_set_event_cb(buttonText[i], event_handler);
+            // lv_obj_set_pos(buttonGcode[i], BTN_X_PIXEL * (i - 3) + INTERVAL_V * ((i - 3) + 1) + FILE_PRE_PIC_X_OFFSET, BTN_Y_PIXEL + INTERVAL_H + titleHeight + FILE_PRE_PIC_Y_OFFSET);
+            lv_obj_set_pos(buttonGcode[i], 258, 70 + 50 * m);
+            m++;
+// #ifndef USE_NEW_LVGL_CONF
+//             buttonText[i] = lv_btn_create(scr, nullptr);
+// #else
+//             buttonText[i] = lv_btn_create(mks_ui.src_main, nullptr);
+// #endif
+//             //lv_obj_set_event_cb(buttonText[i], event_handler);
 
-            lv_btn_use_label_style(buttonText[i]);
-            lv_obj_clear_protect(buttonText[i], LV_PROTECT_FOLLOW);
-            lv_btn_set_layout(buttonText[i], LV_LAYOUT_OFF);
-            //lv_obj_set_event_cb_mks(buttonText[i], event_handler,(i+10),"", 0);
-            lv_obj_set_pos(buttonText[i], BTN_X_PIXEL * (i - 3) + INTERVAL_V * ((i - 3) + 1) + FILE_PRE_PIC_X_OFFSET, BTN_Y_PIXEL + INTERVAL_H + titleHeight + FILE_PRE_PIC_Y_OFFSET + 100);
-            lv_obj_set_size(buttonText[i], 100, 40);
+//             lv_btn_use_label_style(buttonText[i]);
+//             lv_obj_clear_protect(buttonText[i], LV_PROTECT_FOLLOW);
+//             lv_btn_set_layout(buttonText[i], LV_LAYOUT_OFF);
+//             //lv_obj_set_event_cb_mks(buttonText[i], event_handler,(i+10),"", 0);
+//             lv_obj_set_pos(buttonText[i], BTN_X_PIXEL * (i - 3) + INTERVAL_V * ((i - 3) + 1) + FILE_PRE_PIC_X_OFFSET, BTN_Y_PIXEL + INTERVAL_H + titleHeight + FILE_PRE_PIC_Y_OFFSET + 100);
+//             lv_obj_set_size(buttonText[i], 100, 40);
           }
-          labelPageUp[i] = lv_label_create(buttonText[i], public_buf_m);
-          lv_obj_align(labelPageUp[i], buttonText[i], LV_ALIGN_IN_BOTTOM_MID, 0, 0);
+          // labelPageUp[i] = lv_label_create(buttonText[i], public_buf_m);
+          // lv_label_set_style(labelPageUp[i], LV_LABEL_STYLE_MAIN, &tft_style_preHeat_label);
+          // lv_obj_align(labelPageUp[i], buttonText[i], LV_ALIGN_IN_BOTTOM_MID, 0, 0);
+          
+          lv_obj_align(imgGcode[i], buttonGcode[i] , LV_ALIGN_IN_TOP_LEFT, 0, 0);
+          labelPageUp[i] = lv_label_create(scr, public_buf_m);
+          lv_label_set_style(labelPageUp[i], LV_LABEL_STYLE_MAIN, &tft_style_preHeat_label);
+          lv_obj_align(labelPageUp[i], imgGcode[i], LV_ALIGN_OUT_RIGHT_MID, 0, 0);
+        
+        // lv_refr_now(lv_refr_get_disp_refreshing());
         }
         else {
           lv_obj_set_event_cb_mks(buttonGcode[i], event_handler, (i + 1), "", 0);
-          lv_imgbtn_set_src_both(buttonGcode[i], "F:/bmp_file.bin");
-          if (i < 3)
-            lv_obj_set_pos(buttonGcode[i], BTN_X_PIXEL * i + INTERVAL_V * (i + 1), titleHeight);
-          else
-            lv_obj_set_pos(buttonGcode[i], BTN_X_PIXEL * (i - 3) + INTERVAL_V * ((i - 3) + 1), BTN_Y_PIXEL + INTERVAL_H + titleHeight);
+          lv_img_set_src(imgGcode[i], "F:/bmp_file.bin");
+          lv_obj_set_size(buttonGcode[i], 200, 50);
+          // if (i < 3)
+          //   lv_obj_set_pos(buttonGcode[i], BTN_X_PIXEL * i + INTERVAL_V * (i + 1), titleHeight);
+          // else
+          //   lv_obj_set_pos(buttonGcode[i], BTN_X_PIXEL * (i - 3) + INTERVAL_V * ((i - 3) + 1), BTN_Y_PIXEL + INTERVAL_H + titleHeight);
 
-          labelPageUp[i] = lv_label_create(buttonGcode[i], public_buf_m);
-          lv_obj_align(labelPageUp[i], buttonGcode[i], LV_ALIGN_IN_BOTTOM_MID, 0, -5);
+          if (i % 2 == 0)
+          {
+            lv_obj_set_pos(buttonGcode[i], 15, 70 + 50 * n);
+            lv_obj_set_pos(imgGcode[i], 15, 70 + 50 * n);
+            n++;
+          }
+          else
+          {
+            lv_obj_set_pos(buttonGcode[i], 258, 70 + 50 * m);
+            lv_obj_set_pos(imgGcode[i] , 258, 70 + 50 * m);
+            m++;
+          }
+
+          labelPageUp[i] = lv_label_create(scr, public_buf_m);
+          lv_label_set_style(labelPageUp[i], LV_LABEL_STYLE_MAIN, &tft_style_preHeat_label);
+          lv_obj_align(labelPageUp[i], imgGcode[i], LV_ALIGN_OUT_RIGHT_MID, 0, 0);
         }
       }
-      #if HAS_ROTARY_ENCODER
-        if (gCfgItems.encoder_enable) lv_group_add_obj(g, buttonGcode[i]);
-      #endif
+      // #if HAS_ROTARY_ENCODER
+      //   if (gCfgItems.encoder_enable) lv_group_add_obj(g, buttonGcode[i]);
+      // #endif
 
     #else // !TFT35
     #endif // !TFT35
+
+    lv_btn_set_style(buttonGcode[i], LV_BTN_STYLE_REL, &tft_style_preHeat_scr);
+    lv_btn_set_style(buttonGcode[i], LV_BTN_STYLE_PR,  &tft_style_preHeat_scr);
+
+    // lv_refr_now(lv_refr_get_disp_refreshing());
   }
-  #if HAS_ROTARY_ENCODER
-    if (gCfgItems.encoder_enable) {
-      lv_group_add_obj(g, buttonPageUp);
-      lv_group_add_obj(g, buttonPageDown);
-      lv_group_add_obj(g, buttonBack);
+
+  if(file_num != 0) {
+    if (have_pre_pic((char *)list_file.file_name[0])) {
+        strcpy(test_public_buf_l, "S:");
+        strcat(test_public_buf_l, list_file.file_name[0]);
+        char *temp = strstr(test_public_buf_l, ".GCO");
+        if (temp) strcpy(temp, ".bin");
+        // lv_imgbtn_set_src_both(buttonGcode[0], buttonGcode[0]->mks_pic_name);
     }
-  #endif
+  }
+
+  // #if HAS_ROTARY_ENCODER
+  //   if (gCfgItems.encoder_enable) {
+  //     lv_group_add_obj(g, buttonPageUp);
+  //     lv_group_add_obj(g, buttonPageDown);
+  //     lv_group_add_obj(g, buttonBack);
+  //   }
+  // #endif
+  
+  lv_top_name(scr , printing_MENU.choose_file);
+  buttonPageUp = lv_imgbtn_create(scr, "F:/bmp_pageUp.bin", 5, 251, event_handler, ID_P_UP);
+  buttonPageDown = lv_imgbtn_create(scr, "F:/bmp_pageDown.bin", 176, 251, event_handler, ID_P_DOWN);
+  buttonBack = lv_imgbtn_create(scr, "F:/bmp_wifi_return.bin", 345, 250, event_handler, ID_P_RETURN);
+  if(file_num <= 0)
+  {
+    lv_obj_t *labelNoFile = lv_label_create_empty(scr);
+    lv_label_set_text(labelNoFile, printing_MENU.no_file_found);
+    lv_label_set_style(labelNoFile, LV_LABEL_STYLE_MAIN, &tft_style_preHeat_label_BLACK);
+    lv_obj_align(labelNoFile , nullptr, LV_ALIGN_CENTER, 0, 0);
+  }
 }
 
 uint32_t lv_open_gcode_file(char *path) {
@@ -365,11 +544,11 @@ uint32_t lv_open_gcode_file(char *path) {
     char *cur_name;
 
     cur_name = strrchr(path, '/');
-
+    cur_name++;
     card.openFileRead(cur_name);
     card.read(public_buf, 512);
     ps4 = (uint32_t *)strstr((char *)public_buf, ";simage:");
-    // Ignore the beginning message of G-code file
+    // Ignore the beginning message of gcode file
     if (ps4) {
       pre_sread_cnt = (uintptr_t)ps4 - (uintptr_t)((uint32_t *)(&public_buf[0]));
       card.setIndex(pre_sread_cnt);
@@ -490,7 +669,7 @@ void cutFileName(char *path, int len, int bytePerLine, char *outStr) {
                 //&& (strIndex2 != 0) && (strIndex1 < strIndex2)
                 ) ? strIndex1 + 1 : tmpFile;
 
-  if (strIndex2 == 0 || (strIndex1 > strIndex2)) { // not G-code file
+  if (strIndex2 == 0 || (strIndex1 > strIndex2)) { // not gcode file
     #if _LFN_UNICODE
       if (wcslen(beginIndex) > len)
         wcsncpy(outStr, beginIndex, len);
@@ -503,7 +682,7 @@ void cutFileName(char *path, int len, int bytePerLine, char *outStr) {
         strcpy(outStr, beginIndex);
     #endif
   }
-  else { // G-code file
+  else { // gcode file
     if (strIndex2 - beginIndex > (len - 2)) {
       #if _LFN_UNICODE
         wcsncpy(outStr, (const WCHAR *)beginIndex, len - 3);
@@ -549,7 +728,12 @@ void lv_clear_print_file() {
   #if HAS_ROTARY_ENCODER
     if (gCfgItems.encoder_enable) lv_group_remove_all_objs(g);
   #endif
+
+#ifndef USE_NEW_LVGL_CONF
   lv_obj_del(scr);
+#else 
+  lv_obj_clean(mks_ui.src_main);
+#endif
 }
 
 #endif // HAS_TFT_LVGL_UI

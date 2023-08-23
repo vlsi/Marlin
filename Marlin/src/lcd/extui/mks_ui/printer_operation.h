@@ -22,10 +22,11 @@
 #pragma once
 
 #ifdef __cplusplus
-  extern "C" {
+  extern "C" { /* C-declarations for C++ */
 #endif
 
 #define MIN_FILE_PRINTED   100 //5000
+extern bool flash_preview_begin, default_preview_flg, gcode_preview_over;
 
 void printer_state_polling();
 void filament_pin_setup();

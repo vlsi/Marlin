@@ -22,11 +22,12 @@
 #pragma once
 
 #ifdef __cplusplus
-  extern "C" {
+  extern "C" { /* C-declarations for C++ */
 #endif
 
 void lv_draw_language();
 void lv_clear_language();
+extern void disp_language(uint8_t language, uint8_t state);
 
 #ifdef __cplusplus
   } /* C-declarations for C++ */

@@ -22,13 +22,15 @@
 #pragma once
 
 #ifdef __cplusplus
-  extern "C" {
-#endif
+  extern "C" { /* C-declarations for C++ */
+#endif 
 
 void lv_draw_filament_change();
 void lv_clear_filament_change();
 void disp_filament_type();
 void disp_filament_temp();
+extern void lv_filament_temp_refr();
+void refresh_filament_change();
 
 #ifdef __cplusplus
   } /* C-declarations for C++ */

@@ -22,9 +22,13 @@
 #pragma once
 
 #ifdef __cplusplus
-  extern "C" {
+  extern "C" { /* C-declarations for C++ */
 #endif
-
+enum{
+  LAYER_STOP_NO_TRIGGERED,
+  LAYER_STOP_TRIGGERED,
+  LAYER_STOP_CANNOT_TRIGGER
+};
 enum {
   IDLE,
   WORKING,
@@ -47,6 +51,9 @@ void reset_print_time();
 void start_print_time();
 void stop_print_time();
 void setProBarRate();
+void disp_print_speed_change();
+void disp_printing_ext_speed();
+void paused_print();
 
 #ifdef __cplusplus
   } /* C-declarations for C++ */

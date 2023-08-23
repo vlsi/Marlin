@@ -170,14 +170,14 @@
 #endif
 
 /**
- * Thermocouple Options — for MAX6675 (-2), MAX31855 (-3), and MAX31865 (-5).
+ * Thermocouple Options 鈥� for MAX6675 (-2), MAX31855 (-3), and MAX31865 (-5).
  */
 //#define TEMP_SENSOR_FORCE_HW_SPI                // Ignore SCK/MOSI/MISO pins; use CS and the default SPI bus.
 //#define MAX31865_SENSOR_WIRES_0 2               // (2-4) Number of wires for the probe connected to a MAX31865 board.
 //#define MAX31865_SENSOR_WIRES_1 2
 
 //#define MAX31865_50HZ_FILTER                    // Use a 50Hz filter instead of the default 60Hz.
-//#define MAX31865_USE_READ_ERROR_DETECTION       // Treat value spikes (20°C delta in under 1s) as read errors.
+//#define MAX31865_USE_READ_ERROR_DETECTION       // Treat value spikes (20掳C delta in under 1s) as read errors.
 
 //#define MAX31865_USE_AUTO_MODE                  // Read faster and more often than 1-shot; bias voltage always on; slight effect on RTD temperature.
 //#define MAX31865_MIN_SAMPLING_TIME_MSEC     100 // (ms) 1-shot: minimum read interval. Reduces bias voltage effects by leaving sensor unpowered for longer intervals.
@@ -203,7 +203,7 @@
 #if DISABLED(PIDTEMPBED)
   #define BED_CHECK_INTERVAL 5000   // (ms) Interval between checks in bang-bang control
   #if ENABLED(BED_LIMIT_SWITCHING)
-    #define BED_HYSTERESIS 2        // (°C) Only set the relevant heater state when ABS(T-target) > BED_HYSTERESIS
+    #define BED_HYSTERESIS 2        // (掳C) Only set the relevant heater state when ABS(T-target) > BED_HYSTERESIS
   #endif
 #endif
 
@@ -213,7 +213,7 @@
 #if DISABLED(PIDTEMPCHAMBER)
   #define CHAMBER_CHECK_INTERVAL 5000   // (ms) Interval between checks in bang-bang control
   #if ENABLED(CHAMBER_LIMIT_SWITCHING)
-    #define CHAMBER_HYSTERESIS 2        // (°C) Only set the relevant heater state when ABS(T-target) > CHAMBER_HYSTERESIS
+    #define CHAMBER_HYSTERESIS 2        // (掳C) Only set the relevant heater state when ABS(T-target) > CHAMBER_HYSTERESIS
   #endif
 #endif
 
@@ -230,13 +230,13 @@
       #define CHAMBER_FAN_BASE  255   // Chamber fan PWM (0-255)
     #elif CHAMBER_FAN_MODE == 1
       #define CHAMBER_FAN_BASE  128   // Base chamber fan PWM (0-255); turns on when chamber temperature is above the target
-      #define CHAMBER_FAN_FACTOR 25   // PWM increase per °C above target
+      #define CHAMBER_FAN_FACTOR 25   // PWM increase per 掳C above target
     #elif CHAMBER_FAN_MODE == 2
       #define CHAMBER_FAN_BASE  128   // Minimum chamber fan PWM (0-255)
-      #define CHAMBER_FAN_FACTOR 25   // PWM increase per °C difference from target
+      #define CHAMBER_FAN_FACTOR 25   // PWM increase per 掳C difference from target
     #elif CHAMBER_FAN_MODE == 3
       #define CHAMBER_FAN_BASE  128   // Base chamber fan PWM (0-255)
-      #define CHAMBER_FAN_FACTOR 25   // PWM increase per °C above target
+      #define CHAMBER_FAN_FACTOR 25   // PWM increase per 掳C above target
     #endif
   #endif
 
@@ -254,10 +254,10 @@
 // Laser Cooler options
 //
 #if TEMP_SENSOR_COOLER
-  #define COOLER_MINTEMP           8  // (°C)
-  #define COOLER_MAXTEMP          26  // (°C)
-  #define COOLER_DEFAULT_TEMP     16  // (°C)
-  #define TEMP_COOLER_HYSTERESIS   1  // (°C) Temperature proximity considered "close enough" to the target
+  #define COOLER_MINTEMP           8  // (掳C)
+  #define COOLER_MAXTEMP          26  // (掳C)
+  #define COOLER_DEFAULT_TEMP     16  // (掳C)
+  #define TEMP_COOLER_HYSTERESIS   1  // (掳C) Temperature proximity considered "close enough" to the target
   #define COOLER_PIN               8  // Laser cooler on/off pin used to control power to the cooling element (e.g., TEC, External chiller via relay)
   #define COOLER_INVERTING     false
   #define TEMP_COOLER_PIN         15  // Laser/Cooler temperature sensor pin. ADC is required.
@@ -265,7 +265,7 @@
   #define COOLER_FAN_INDEX         0  // FAN number 0, 1, 2 etc. e.g.
   #if ENABLED(COOLER_FAN)
     #define COOLER_FAN_BASE      100  // Base Cooler fan PWM (0-255); turns on when Cooler temperature is above the target
-    #define COOLER_FAN_FACTOR     25  // PWM increase per °C above target
+    #define COOLER_FAN_FACTOR     25  // PWM increase per 掳C above target
   #endif
 #endif
 
@@ -274,8 +274,8 @@
 //
 #if TEMP_SENSOR_BOARD
   #define THERMAL_PROTECTION_BOARD   // Halt the printer if the board sensor leaves the temp range below.
-  #define BOARD_MINTEMP           8  // (°C)
-  #define BOARD_MAXTEMP          70  // (°C)
+  #define BOARD_MINTEMP           8  // (掳C)
+  #define BOARD_MAXTEMP          70  // (掳C)
   #ifndef TEMP_BOARD_PIN
     //#define TEMP_BOARD_PIN -1      // Board temp sensor pin, if not set in pins file.
   #endif
@@ -299,7 +299,7 @@
  */
 #if ENABLED(THERMAL_PROTECTION_HOTENDS)
   #define THERMAL_PROTECTION_PERIOD 40        // Seconds
-  #define THERMAL_PROTECTION_HYSTERESIS 4     // Degrees Celsius
+  #define THERMAL_PROTECTION_HYSTERESIS 20     // Degrees Celsius
 
   //#define ADAPTIVE_FAN_SLOWING              // Slow part cooling fan if temperature drops
   #if BOTH(ADAPTIVE_FAN_SLOWING, PIDTEMP)
@@ -319,7 +319,7 @@
    * below 2.
    */
   #define WATCH_TEMP_PERIOD  40               // Seconds
-  #define WATCH_TEMP_INCREASE 2               // Degrees Celsius
+  #define WATCH_TEMP_INCREASE 20               // Degrees Celsius
 #endif
 
 /**
@@ -451,8 +451,8 @@
   // Turn on AUTOTEMP on M104/M109 by default using proportions set here
   //#define AUTOTEMP_PROPORTIONAL
   #if ENABLED(AUTOTEMP_PROPORTIONAL)
-    #define AUTOTEMP_MIN_P      0 // (°C) Added to the target temperature
-    #define AUTOTEMP_MAX_P      5 // (°C) Added to the target temperature
+    #define AUTOTEMP_MIN_P      0 // (掳C) Added to the target temperature
+    #define AUTOTEMP_MAX_P      5 // (掳C) Added to the target temperature
     #define AUTOTEMP_FACTOR_P   1 // Apply this F parameter by default (overridden by M104/M109 F)
   #endif
 #endif
@@ -508,9 +508,9 @@
 //#define HOTEND_IDLE_TIMEOUT
 #if ENABLED(HOTEND_IDLE_TIMEOUT)
   #define HOTEND_IDLE_TIMEOUT_SEC (5*60)    // (seconds) Time without extruder movement to trigger protection
-  #define HOTEND_IDLE_MIN_TRIGGER   180     // (°C) Minimum temperature to enable hotend protection
-  #define HOTEND_IDLE_NOZZLE_TARGET   0     // (°C) Safe temperature for the nozzle after timeout
-  #define HOTEND_IDLE_BED_TARGET      0     // (°C) Safe temperature for the bed after timeout
+  #define HOTEND_IDLE_MIN_TRIGGER   180     // (掳C) Minimum temperature to enable hotend protection
+  #define HOTEND_IDLE_NOZZLE_TARGET   0     // (掳C) Safe temperature for the nozzle after timeout
+  #define HOTEND_IDLE_BED_TARGET      0     // (掳C) Safe temperature for the bed after timeout
 #endif
 
 // @section temperature
@@ -540,7 +540,7 @@
   #define CONTROLLERFAN_IDLE_TIME        60 // (seconds) Extra time to keep the fan running after disabling motors
 
   // Use TEMP_SENSOR_BOARD as a trigger for enabling the controller fan
-  //#define CONTROLLER_FAN_MIN_BOARD_TEMP 40  // (°C) Turn on the fan if the board reaches this temperature
+  //#define CONTROLLER_FAN_MIN_BOARD_TEMP 40  // (掳C) Turn on the fan if the board reaches this temperature
 
   //#define CONTROLLER_FAN_EDITABLE         // Enable M710 configurable settings
   #if ENABLED(CONTROLLER_FAN_EDITABLE)
@@ -628,7 +628,7 @@
  * Multiple extruders can be assigned to the same pin in which case
  * the fan will turn on when any selected extruder is above the threshold.
  */
-#define E0_AUTO_FAN_PIN -1
+#define E0_AUTO_FAN_PIN PC14
 #define E1_AUTO_FAN_PIN -1
 #define E2_AUTO_FAN_PIN -1
 #define E3_AUTO_FAN_PIN -1
@@ -639,7 +639,7 @@
 #define CHAMBER_AUTO_FAN_PIN -1
 #define COOLER_AUTO_FAN_PIN -1
 
-#define EXTRUDER_AUTO_FAN_TEMPERATURE 50
+#define EXTRUDER_AUTO_FAN_TEMPERATURE 80
 #define EXTRUDER_AUTO_FAN_SPEED 255   // 255 == full speed
 #define CHAMBER_AUTO_FAN_TEMPERATURE 30
 #define CHAMBER_AUTO_FAN_SPEED 255
@@ -825,9 +825,9 @@
 #ifdef Z2_DRIVER_TYPE
   //#define INVERT_Z2_VS_Z_DIR        // Z2 direction signal is the opposite of Z
 
-  //#define Z_MULTI_ENDSTOPS          // Other Z axes have their own endstops
+//   #define Z_MULTI_ENDSTOPS          // Other Z axes have their own endstops
   #if ENABLED(Z_MULTI_ENDSTOPS)
-    #define Z2_USE_ENDSTOP   _XMAX_   // Z2 endstop board plug. Don't forget to enable USE_*_PLUG.
+    #define Z2_USE_ENDSTOP   _ZMAX_   // Z2 endstop board plug. Don't forget to enable USE_*_PLUG.
     #define Z2_ENDSTOP_ADJUSTMENT 0   // Z2 offset relative to Y endstop
   #endif
   #ifdef Z3_DRIVER_TYPE
@@ -864,12 +864,12 @@
  * the position of the toolhead relative to the workspace.
  */
 
-//#define SENSORLESS_BACKOFF_MM  { 2, 2, 0 }  // (linear=mm, rotational=°) Backoff from endstops before sensorless homing
+//#define SENSORLESS_BACKOFF_MM  { 2, 2, 0 }  // (linear=mm, rotational=掳) Backoff from endstops before sensorless homing
 
-#define HOMING_BUMP_MM      { 5, 5, 2 }       // (linear=mm, rotational=°) Backoff from endstops after first bump
-#define HOMING_BUMP_DIVISOR { 2, 2, 4 }       // Re-Bump Speed Divisor (Divides the Homing Feedrate)
+#define HOMING_BUMP_MM      { 5, 5, 2, 2 }       // (linear=mm, rotational=掳) Backoff from endstops after first bump
+#define HOMING_BUMP_DIVISOR { 2, 2, 4, 2 }       // Re-Bump Speed Divisor (Divides the Homing Feedrate)
 
-//#define HOMING_BACKOFF_POST_MM { 2, 2, 2 }  // (linear=mm, rotational=°) Backoff from endstops after homing
+//#define HOMING_BACKOFF_POST_MM { 2, 2, 2 }  // (linear=mm, rotational=掳) Backoff from endstops after homing
 
 //#define QUICK_HOME                          // If G28 contains XY do a diagonal move first
 //#define HOME_Y_BEFORE_X                     // If G28 contains XY home Y before X
@@ -1046,7 +1046,7 @@
 
 // @section motion
 
-#define AXIS_RELATIVE_MODES { false, false, false, false }
+#define AXIS_RELATIVE_MODES { false, false, false, false, false }
 
 // Add a Duplicate option for well-separated conjoined nozzles
 //#define MULTI_NOZZLE_DUPLICATION
@@ -1081,11 +1081,11 @@
 #define DISABLE_INACTIVE_E true
 
 // Default Minimum Feedrates for printing and travel moves
-#define DEFAULT_MINIMUMFEEDRATE       0.0     // (mm/s. °/s for rotational-only moves) Minimum feedrate. Set with M205 S.
-#define DEFAULT_MINTRAVELFEEDRATE     0.0     // (mm/s. °/s for rotational-only moves) Minimum travel feedrate. Set with M205 T.
+#define DEFAULT_MINIMUMFEEDRATE       0.0     // (mm/s. 掳/s for rotational-only moves) Minimum feedrate. Set with M205 S.
+#define DEFAULT_MINTRAVELFEEDRATE     0.0     // (mm/s. 掳/s for rotational-only moves) Minimum travel feedrate. Set with M205 T.
 
 // Minimum time that a segment needs to take as the buffer gets emptied
-#define DEFAULT_MINSEGMENTTIME        20000   // (µs) Set with M205 B.
+#define DEFAULT_MINSEGMENTTIME        20000   // (碌s) Set with M205 B.
 
 // Slow down the machine if the lookahead buffer is (by default) half full.
 // Increase the slowdown divisor for larger buffer sizes.
@@ -1118,7 +1118,7 @@
 #if ENABLED(BACKLASH_COMPENSATION)
   // Define values for backlash distance and correction.
   // If BACKLASH_GCODE is enabled these values are the defaults.
-  #define BACKLASH_DISTANCE_MM { 0, 0, 0 } // (linear=mm, rotational=°) One value for each linear axis
+  #define BACKLASH_DISTANCE_MM { 0, 0, 0 } // (linear=mm, rotational=掳) One value for each linear axis
   #define BACKLASH_CORRECTION    0.0       // 0.0 = no correction; 1.0 = full correction
 
   // Add steps for motor direction changes on CORE kinematics
@@ -1157,7 +1157,7 @@
  * and hotend offsets.
  *
  * Note: HOTEND_OFFSET and CALIBRATION_OBJECT_CENTER must be set to within
- *       ±5mm of true values for G425 to succeed.
+ *       卤5mm of true values for G425 to succeed.
  */
 //#define CALIBRATION_GCODE
 #if ENABLED(CALIBRATION_GCODE)
@@ -1511,13 +1511,13 @@
    * an option on the LCD screen to continue the print from the last-known
    * point in the file.
    */
-  //#define POWER_LOSS_RECOVERY
+  #define POWER_LOSS_RECOVERY
   #if ENABLED(POWER_LOSS_RECOVERY)
-    #define PLR_ENABLED_DEFAULT   false // Power Loss Recovery enabled by default. (Set with 'M413 Sn' & M500)
+    #define PLR_ENABLED_DEFAULT   true // Power Loss Recovery enabled by default. (Set with 'M413 Sn' & M500)
     //#define BACKUP_POWER_SUPPLY       // Backup power / UPS to move the steppers on power loss
     //#define POWER_LOSS_ZRAISE       2 // (mm) Z axis raise on resume (on power loss with UPS)
     //#define POWER_LOSS_PIN         44 // Pin to detect power loss. Set to -1 to disable default pin on boards without module.
-    //#define POWER_LOSS_STATE     HIGH // State of pin indicating power loss
+    // #define POWER_LOSS_STATE     LOW // State of pin indicating power loss
     //#define POWER_LOSS_PULLUP         // Set pullup / pulldown as appropriate for your sensor
     //#define POWER_LOSS_PULLDOWN
     //#define POWER_LOSS_PURGE_LEN   20 // (mm) Length of filament to purge on resume
@@ -1576,7 +1576,7 @@
   // LCD's font must contain the characters. Check your selected LCD language.
   //#define UTF_FILENAME_SUPPORT
 
-  //#define LONG_FILENAME_HOST_SUPPORT    // Get the long filename of a file/folder with 'M33 <dosname>' and list long filenames with 'M20 L'
+  #define LONG_FILENAME_HOST_SUPPORT    // Get the long filename of a file/folder with 'M33 <dosname>' and list long filenames with 'M20 L'
   //#define LONG_FILENAME_WRITE_SUPPORT   // Create / delete files with long filenames via M28, M30, and Binary Transfer Protocol
 
   //#define SCROLL_LONG_FILENAMES         // Scroll long filenames in the SD card menu
@@ -1611,7 +1611,7 @@
    *
    * [1] On AVR an interrupt-capable pin is best for UHS3 compatibility.
    */
-  //#define USB_FLASH_DRIVE_SUPPORT
+//   #define USB_FLASH_DRIVE_SUPPORT
   #if ENABLED(USB_FLASH_DRIVE_SUPPORT)
     /**
      * USB Host Shield Library
@@ -1631,7 +1631,7 @@
     /**
      * Native USB Host supported by some boards (USB OTG)
      */
-    //#define USE_OTG_USB_HOST
+    #define USE_OTG_USB_HOST
 
     #if DISABLED(USE_OTG_USB_HOST)
       #define USB_CS_PIN    SDSS
@@ -1689,7 +1689,7 @@
    * Multiple volume support - EXPERIMENTAL.
    * Adds 'M21 Pm' / 'M21 S' / 'M21 U' to mount SD Card / USB Drive.
    */
-  //#define MULTI_VOLUME
+//   #define MULTI_VOLUME
   #if ENABLED(MULTI_VOLUME)
     #define VOLUME_SD_ONBOARD
     #define VOLUME_USB_FLASH_DRIVE
@@ -1703,7 +1703,7 @@
  * By default an onboard SD card reader may be shared as a USB mass-
  * storage device. This option hides the SD card from the host PC.
  */
-//#define NO_SD_HOST_DRIVE   // Disable SD Card access over USB (for security).
+#define NO_SD_HOST_DRIVE   // Disable SD Card access over USB (for security).
 
 /**
  * Additional options for Graphical Displays
@@ -1755,7 +1755,7 @@
    */
   #if IS_U8GLIB_ST7920
     // Enable this option and reduce the value to optimize screen updates.
-    // The normal delay is 10µs. Use the lowest value that still gives a reliable display.
+    // The normal delay is 10碌s. Use the lowest value that still gives a reliable display.
     //#define DOGM_SPI_DELAY_US 5
 
     //#define LIGHTWEIGHT_UI
@@ -1935,16 +1935,16 @@
     #if ENABLED(TOUCH_UI_UTF8_WESTERN_CHARSET)
       // Additional character groups. These characters require
       // full bitmaps and take up considerable storage:
-      //#define TOUCH_UI_UTF8_SUPERSCRIPTS  // ¹ ² ³
-      //#define TOUCH_UI_UTF8_COPYRIGHT     // © ®
-      //#define TOUCH_UI_UTF8_GERMANIC      // ß
-      //#define TOUCH_UI_UTF8_SCANDINAVIAN  // Æ Ð Ø Þ æ ð ø þ
-      //#define TOUCH_UI_UTF8_PUNCTUATION   // « » ¿ ¡
-      //#define TOUCH_UI_UTF8_CURRENCY      // ¢ £ ¤ ¥
-      //#define TOUCH_UI_UTF8_ORDINALS      // º ª
-      //#define TOUCH_UI_UTF8_MATHEMATICS   // ± × ÷
-      //#define TOUCH_UI_UTF8_FRACTIONS     // ¼ ½ ¾
-      //#define TOUCH_UI_UTF8_SYMBOLS       // µ ¶ ¦ § ¬
+      //#define TOUCH_UI_UTF8_SUPERSCRIPTS  // 鹿 虏 鲁
+      //#define TOUCH_UI_UTF8_COPYRIGHT     // 漏 庐
+      //#define TOUCH_UI_UTF8_GERMANIC      // 脽
+      //#define TOUCH_UI_UTF8_SCANDINAVIAN  // 脝 脨 脴 脼 忙 冒 酶 镁
+      //#define TOUCH_UI_UTF8_PUNCTUATION   // 芦 禄 驴 隆
+      //#define TOUCH_UI_UTF8_CURRENCY      // 垄 拢 陇 楼
+      //#define TOUCH_UI_UTF8_ORDINALS      // 潞 陋
+      //#define TOUCH_UI_UTF8_MATHEMATICS   // 卤 脳 梅
+      //#define TOUCH_UI_UTF8_FRACTIONS     // 录 陆 戮
+      //#define TOUCH_UI_UTF8_SYMBOLS       // 碌 露 娄 搂 卢
     #endif
 
     // Cyrillic character set, costs about 27KiB of flash
@@ -2000,7 +2000,7 @@
   //#define WATCHDOG_RESET_MANUAL
 #endif
 
-// @section lcd
+// @section lcd 
 
 /**
  * Babystepping enables movement of the axes by tiny increments without changing
@@ -2009,30 +2009,30 @@
  *
  * Warning: Does not respect endstops!
  */
-//#define BABYSTEPPING
+#define BABYSTEPPING
 #if ENABLED(BABYSTEPPING)
-  //#define INTEGRATED_BABYSTEPPING         // EXPERIMENTAL integration of babystepping into the Stepper ISR
+  #define INTEGRATED_BABYSTEPPING         // EXPERIMENTAL integration of babystepping into the Stepper ISR
   //#define BABYSTEP_WITHOUT_HOMING
   //#define BABYSTEP_ALWAYS_AVAILABLE       // Allow babystepping at all times (not just during movement).
   //#define BABYSTEP_XY                     // Also enable X/Y Babystepping. Not supported on DELTA!
   #define BABYSTEP_INVERT_Z false           // Change if Z babysteps should go the other way
   //#define BABYSTEP_MILLIMETER_UNITS       // Specify BABYSTEP_MULTIPLICATOR_(XY|Z) in mm instead of micro-steps
-  #define BABYSTEP_MULTIPLICATOR_Z  1       // (steps or mm) Steps or millimeter distance for each Z babystep
+  #define BABYSTEP_MULTIPLICATOR_Z  0.1       // (steps or mm) Steps or millimeter distance for each Z babystep
   #define BABYSTEP_MULTIPLICATOR_XY 1       // (steps or mm) Steps or millimeter distance for each XY babystep
 
-  //#define DOUBLECLICK_FOR_Z_BABYSTEPPING  // Double-click on the Status Screen for Z Babystepping.
+  #define DOUBLECLICK_FOR_Z_BABYSTEPPING  // Double-click on the Status Screen for Z Babystepping.
   #if ENABLED(DOUBLECLICK_FOR_Z_BABYSTEPPING)
-    #define DOUBLECLICK_MAX_INTERVAL 1250   // Maximum interval between clicks, in milliseconds.
+    #define DOUBLECLICK_MAX_INTERVAL 2500   // Maximum interval between clicks, in milliseconds.
                                             // Note: Extra time may be added to mitigate controller latency.
-    //#define MOVE_Z_WHEN_IDLE              // Jump to the move Z menu on doubleclick when printer is idle.
+    #define MOVE_Z_WHEN_IDLE              // Jump to the move Z menu on doubleclick when printer is idle.
     #if ENABLED(MOVE_Z_WHEN_IDLE)
-      #define MOVE_Z_IDLE_MULTIPLICATOR 1   // Multiply 1mm by this factor for the move step size.
+      #define MOVE_Z_IDLE_MULTIPLICATOR 0.01   // Multiply 1mm by this factor for the move step size.
     #endif
   #endif
 
-  //#define BABYSTEP_DISPLAY_TOTAL          // Display total babysteps since last G28
+  #define BABYSTEP_DISPLAY_TOTAL          // Display total babysteps since last G28
 
-  //#define BABYSTEP_ZPROBE_OFFSET          // Combine M851 Z and Babystepping
+  // #define BABYSTEP_ZPROBE_OFFSET          // Combine M851 Z and Babystepping
   #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
     //#define BABYSTEP_HOTEND_Z_OFFSET      // For multiple hotends, babystep relative Z offsets
     //#define BABYSTEP_ZPROBE_GFX_OVERLAY   // Enable graphical overlay on Z-offset editor
@@ -2115,10 +2115,10 @@
  * the probe to be unable to reach any points.
  */
 #if PROBE_SELECTED && !IS_KINEMATIC
-  //#define PROBING_MARGIN_LEFT PROBING_MARGIN
-  //#define PROBING_MARGIN_RIGHT PROBING_MARGIN
-  //#define PROBING_MARGIN_FRONT PROBING_MARGIN
-  //#define PROBING_MARGIN_BACK PROBING_MARGIN
+  #define PROBING_MARGIN_LEFT PROBING_MARGIN
+  #define PROBING_MARGIN_RIGHT PROBING_MARGIN
+  #define PROBING_MARGIN_FRONT PROBING_MARGIN
+  #define PROBING_MARGIN_BACK PROBING_MARGIN
 #endif
 
 #if EITHER(MESH_BED_LEVELING, AUTO_BED_LEVELING_UBL)
@@ -2176,26 +2176,26 @@
   #if ENABLED(PTC_PROBE)
     // Probe temperature calibration generates a table of values starting at PTC_PROBE_START
     // (e.g., 30), in steps of PTC_PROBE_RES (e.g., 5) with PTC_PROBE_COUNT (e.g., 10) samples.
-    #define PTC_PROBE_START   30    // (°C)
-    #define PTC_PROBE_RES      5    // (°C)
+    #define PTC_PROBE_START   30    // (掳C)
+    #define PTC_PROBE_RES      5    // (掳C)
     #define PTC_PROBE_COUNT   10
-    #define PTC_PROBE_ZOFFS   { 0 } // (µm) Z adjustments per sample
+    #define PTC_PROBE_ZOFFS   { 0 } // (碌m) Z adjustments per sample
   #endif
 
   #if ENABLED(PTC_BED)
     // Bed temperature calibration builds a similar table.
-    #define PTC_BED_START     60    // (°C)
-    #define PTC_BED_RES        5    // (°C)
+    #define PTC_BED_START     60    // (掳C)
+    #define PTC_BED_RES        5    // (掳C)
     #define PTC_BED_COUNT     10
-    #define PTC_BED_ZOFFS     { 0 } // (µm) Z adjustments per sample
+    #define PTC_BED_ZOFFS     { 0 } // (碌m) Z adjustments per sample
   #endif
 
   #if ENABLED(PTC_HOTEND)
     // Note: There is no automatic calibration for the hotend. Use M871.
-    #define PTC_HOTEND_START 180    // (°C)
-    #define PTC_HOTEND_RES     5    // (°C)
+    #define PTC_HOTEND_START 180    // (掳C)
+    #define PTC_HOTEND_RES     5    // (掳C)
     #define PTC_HOTEND_COUNT  20
-    #define PTC_HOTEND_ZOFFS  { 0 } // (µm) Z adjustments per sample
+    #define PTC_HOTEND_ZOFFS  { 0 } // (碌m) Z adjustments per sample
   #endif
 
   // G76 options
@@ -2209,7 +2209,7 @@
 
     // The temperature the probe should be at while taking measurements during
     // bed temperature calibration.
-    #define PTC_PROBE_TEMP    30  // (°C)
+    #define PTC_PROBE_TEMP    30  // (掳C)
 
     // Height above Z=0.0 to raise the nozzle. Lowering this can help the probe to heat faster.
     // Note: The Z=0.0 offset is determined by the probe Z offset (e.g., as set with M851 Z).
@@ -2238,7 +2238,7 @@
   //#define SF_ARC_FIX                // Enable only if using SkeinForge with "Arc Point" fillet procedure
 #endif
 
-// G5 Bézier Curve Support with XYZE destination and IJPQ offsets
+// G5 B茅zier Curve Support with XYZE destination and IJPQ offsets
 //#define BEZIER_CURVE_SUPPORT        // Requires ~2666 bytes
 
 #if EITHER(ARC_SUPPORT, BEZIER_CURVE_SUPPORT)
@@ -2269,11 +2269,11 @@
 #endif
 
 // Moves (or segments) with fewer steps than this will be joined with the next move
-#define MIN_STEPS_PER_SEGMENT 6
+#define MIN_STEPS_PER_SEGMENT 30
 
 /**
  * Minimum delay before and after setting the stepper DIR (in ns)
- *     0 : No delay (Expect at least 10µS since one Stepper ISR must transpire)
+ *     0 : No delay (Expect at least 10碌S since one Stepper ISR must transpire)
  *    20 : Minimum for TMC2xxx drivers
  *   200 : Minimum for A4988 drivers
  *   400 : Minimum for A5984 drivers
@@ -2288,7 +2288,7 @@
 //#define MINIMUM_STEPPER_PRE_DIR_DELAY 650
 
 /**
- * Minimum stepper driver pulse width (in µs)
+ * Minimum stepper driver pulse width (in 碌s)
  *   0 : Smallest possible width the MCU can produce, compatible with TMC2xxx drivers
  *   0 : Minimum 500ns for LV8729, adjusted in stepper.h
  *   1 : Minimum for A4988 and A5984 stepper drivers
@@ -2312,7 +2312,7 @@
  *
  * Override the default value based on the driver type set in Configuration.h.
  */
-//#define MAXIMUM_STEPPER_RATE 250000
+#define MAXIMUM_STEPPER_RATE 250000
 
 // @section temperature
 
@@ -3120,7 +3120,7 @@
    * CHOPPER_DEFAULT_24V
    * CHOPPER_DEFAULT_36V
    * CHOPPER_09STEP_24V   // 0.9 degree steppers (24V)
-   * CHOPPER_PRUSAMK3_24V // Imported parameters from the official Průša firmware for MK3 (24V)
+   * CHOPPER_PRUSAMK3_24V // Imported parameters from the official Pr暖拧a firmware for MK3 (24V)
    * CHOPPER_MARLIN_119   // Old defaults from Marlin v1.1.9
    *
    * Define your own with:
@@ -3190,9 +3190,9 @@
   #define Z2_HYBRID_THRESHOLD      3
   #define Z3_HYBRID_THRESHOLD      3
   #define Z4_HYBRID_THRESHOLD      3
-  #define I_HYBRID_THRESHOLD       3  // [linear=mm/s, rotational=°/s]
-  #define J_HYBRID_THRESHOLD       3  // [linear=mm/s, rotational=°/s]
-  #define K_HYBRID_THRESHOLD       3  // [linear=mm/s, rotational=°/s]
+  #define I_HYBRID_THRESHOLD       3  // [linear=mm/s, rotational=掳/s]
+  #define J_HYBRID_THRESHOLD       3  // [linear=mm/s, rotational=掳/s]
+  #define K_HYBRID_THRESHOLD       3  // [linear=mm/s, rotational=掳/s]
   #define U_HYBRID_THRESHOLD       3  // [mm/s]
   #define V_HYBRID_THRESHOLD       3
   #define W_HYBRID_THRESHOLD       3
@@ -3372,9 +3372,9 @@
    *  Example pulse data for Nikon: https://bit.ly/2FKD0Aq
    *                     IR Wiring: https://git.io/JvJf7
    */
-  //#define PHOTO_PULSES_US { 2000, 27850, 400, 1580, 400, 3580, 400 }  // (µs) Durations for each 48.4kHz oscillation
+  //#define PHOTO_PULSES_US { 2000, 27850, 400, 1580, 400, 3580, 400 }  // (碌s) Durations for each 48.4kHz oscillation
   #ifdef PHOTO_PULSES_US
-    #define PHOTO_PULSE_DELAY_US 13 // (µs) Approximate duration of each HIGH and LOW pulse in the oscillation
+    #define PHOTO_PULSE_DELAY_US 13 // (碌s) Approximate duration of each HIGH and LOW pulse in the oscillation
   #endif
 #endif
 
@@ -4096,7 +4096,7 @@
   //#define MAX7219_GCODE          // Add the M7219 G-code to control the LED matrix
   #define MAX7219_INIT_TEST    2   // Test pattern at startup: 0=none, 1=sweep, 2=spiral
   #define MAX7219_NUMBER_UNITS 1   // Number of Max7219 units in chain.
-  #define MAX7219_ROTATE       0   // Rotate the display clockwise (in multiples of +/- 90°)
+  #define MAX7219_ROTATE       0   // Rotate the display clockwise (in multiples of +/- 90掳)
                                    // connector at:  right=0   bottom=-90  top=90  left=180
   //#define MAX7219_REVERSE_ORDER  // The order of the LED matrix units may be reversed
   //#define MAX7219_REVERSE_EACH   // The LEDs in each matrix unit row may be reversed
@@ -4164,7 +4164,7 @@
 // @section multi-material
 
 /**
- * Průša Multi-Material Unit (MMU)
+ * Pr暖拧a Multi-Material Unit (MMU)
  * Enable in Configuration.h
  *
  * These devices allow a single stepper driver on the board to drive
@@ -4198,7 +4198,7 @@
   //#define MMU2_MENUS
   #if EITHER(MMU2_MENUS, HAS_PRUSA_MMU2S)
     // Settings for filament load / unload from the LCD menu.
-    // This is for Průša MK3-style extruders. Customize for your hardware.
+    // This is for Pr暖拧a MK3-style extruders. Customize for your hardware.
     #define MMU2_FILAMENTCHANGE_EJECT_FEED 80.0
     #define MMU2_LOAD_TO_NOZZLE_SEQUENCE \
       {  7.2, 1145 }, \
@@ -4247,7 +4247,7 @@
     /**
      * MMU1 Extruder Sensor
      *
-     * Support for a Průša (or other) IR Sensor to detect filament near the extruder
+     * Support for a Pr暖拧a (or other) IR Sensor to detect filament near the extruder
      * and make loading more reliable. Suitable for an extruder equipped with a filament
      * sensor less than 38mm from the gears.
      *

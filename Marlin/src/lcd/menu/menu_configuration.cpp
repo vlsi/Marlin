@@ -324,9 +324,9 @@ void menu_advanced_settings();
 
   void _menu_configuration_preheat_settings() {
     #define _MINTEMP_ITEM(N) HEATER_##N##_MINTEMP,
-    #define _MAXTEMP_ITEM(N) HEATER_##N##_MAXTEMP,
+    #define _ITEM(N) HEATER_##N##_MAXTEMP,
     #define MINTEMP_ALL _MIN(REPEAT(HOTENDS, _MINTEMP_ITEM) 999)
-    #define MAXTEMP_ALL _MAX(REPEAT(HOTENDS, _MAXTEMP_ITEM) 0)
+    #define ALL _MAX(REPEAT(HOTENDS, _MAXTEMP_ITEM) 0)
     const uint8_t m = MenuItemBase::itemIndex;
     START_MENU();
     STATIC_ITEM_F(ui.get_preheat_label(m), SS_DEFAULT|SS_INVERT);

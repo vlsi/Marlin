@@ -361,7 +361,7 @@ private:
 };
 
 #if ENABLED(USB_FLASH_DRIVE_SUPPORT)
-  #define IS_SD_INSERTED() DiskIODriver_USBFlash::isInserted()
+  #define IS_SD_INSERTED() (DiskIODriver_USBFlash::isInserted() || (READ(SD_DETECT_PIN) == 0))
 #elif HAS_SD_DETECT
   #define IS_SD_INSERTED() (READ(SD_DETECT_PIN) == SD_DETECT_STATE)
 #else
