@@ -35,6 +35,7 @@ static lv_obj_t *scr;
 static lv_obj_t *labelStep, *buttonStep, *buttonMov, *buttonExt;
 static lv_obj_t *labelMov, *labelExt;
 static lv_obj_t *printSpeedText;
+static lv_obj_t *imgtop, *buttonReturn;
 
 enum {
   ID_C_ADD = 1,
@@ -49,6 +50,11 @@ static bool editingFlowrate;
 
 static void event_handler(lv_obj_t *obj, lv_event_t event) {
   if (event != LV_EVENT_RELEASED) return;
+
+  voice_button_on();
+  hal.delay_ms(100);
+  WRITE(BEEPER_PIN, LOW); 
+
   switch (obj->mks_obj_id) {
     case ID_C_ADD:
       if (!editingFlowrate) {
@@ -110,7 +116,8 @@ static void event_handler(lv_obj_t *obj, lv_event_t event) {
       disp_speed_step();
       break;
     case ID_C_RETURN:
-      goto_previous_ui();
+      clear_cur_ui();
+      draw_return_ui();
       break;
   }
 }
@@ -149,7 +156,7 @@ void lv_draw_change_speed() {
   disp_speed_step();
 
   printSpeedText = lv_label_create_empty(scr);
-  lv_obj_set_style(printSpeedText, &tft_style_label_rel);
+  lv_obj_set_style(printSpeedText, &tft_style_preHeat_label);// tft_style_label_rel
   disp_print_speed();
 }
 
@@ -184,11 +191,11 @@ void disp_print_speed() {
 
   int16_t val;
   const char *lbl;
-  if (editingFlowrate) {
+  if (editingFlowrate) {//挤出数度
     lbl = speed_menu.extrude_speed;
     val = planner.flow_percentage[0];
   }
-  else {
+  else {//打印速度
     lbl = speed_menu.move_speed;
     val = feedrate_percentage;
   }
@@ -198,6 +205,10 @@ void disp_print_speed() {
   strcat(public_buf_l, buf);
   lv_label_set_text(printSpeedText, public_buf_l);
   lv_obj_align(printSpeedText, nullptr, LV_ALIGN_CENTER, 0, -65);
+
+  lv_refr_now(lv_refr_get_disp_refreshing());
+  lv_img_set_src(imgtop, "F:/bmp_preHeat_top.bin");
+  lv_imgbtn_set_src_both(buttonReturn,"F:/bmp_preHeat_return.bin");
 }
 
 void disp_speed_type() {
@@ -220,6 +231,48 @@ void lv_clear_change_speed() {
     if (gCfgItems.encoder_enable) lv_group_remove_all_objs(g);
   #endif
   lv_obj_del(scr);
+}
+
+void lv_draw_print_speed_change()
+{
+  scr = lv_screen_create(CHANGE_SPEED_UI);
+
+  imgtop = lv_img_create(scr, NULL);
+  lv_img_set_src(imgtop, "F:/bmp_preHeat_top.bin");
+  lv_obj_set_pos(imgtop, 0, 0);
+  lv_refr_now(lv_refr_get_disp_refreshing());
+
+  buttonReturn = lv_imgbtn_create(scr, "F:/bmp_preHeat_return.bin", event_handler, ID_C_RETURN);
+  lv_obj_set_pos(buttonReturn, 6, 3);
+  lv_refr_now(lv_refr_get_disp_refreshing());
+
+lv_big_button_create(scr, "F:/bmp_Add.bin", speed_menu.add, INTERVAL_V, BTN_Y_PIXEL + INTERVAL_H + titleHeight, event_handler, ID_C_ADD);
+  lv_big_button_create(scr, "F:/bmp_Dec.bin", speed_menu.dec,BTN_X_PIXEL + INTERVAL_V * 2, BTN_Y_PIXEL + INTERVAL_H + titleHeight, event_handler, ID_C_DEC);
+  // buttonMov  = lv_imgbtn_create(scr, nullptr, INTERVAL_V, BTN_Y_PIXEL + INTERVAL_H + titleHeight, event_handler, ID_C_MOVE);
+  // buttonExt  = lv_imgbtn_create(scr, nullptr, BTN_X_PIXEL + INTERVAL_V * 2, BTN_Y_PIXEL + INTERVAL_H + titleHeight, event_handler, ID_C_EXT);
+  switch(printflow_speed)
+  {
+    case print: editingFlowrate = false;break;
+    case flow: editingFlowrate = true;break;
+    default: break;
+  }
+  buttonStep = lv_imgbtn_create(scr, nullptr, BTN_X_PIXEL * 2 + INTERVAL_V * 3, BTN_Y_PIXEL + INTERVAL_H + titleHeight, event_handler, ID_C_STEP);
+
+  // Create labels on the image buttons
+  labelMov  = lv_label_create_empty(buttonMov);
+  labelExt  = lv_label_create_empty(buttonExt);
+  labelStep = lv_label_create_empty(buttonStep);
+
+  // disp_speed_type();
+  disp_speed_step();
+
+  printSpeedText = lv_label_create_empty(scr);
+  lv_obj_set_style(printSpeedText, &tft_style_preHeat_label);// tft_style_label_rel
+  disp_print_speed();
+
+  lv_refr_now(lv_refr_get_disp_refreshing());
+  lv_img_set_src(imgtop, "F:/bmp_preHeat_top.bin");
+  lv_imgbtn_set_src_both(buttonReturn,"F:/bmp_preHeat_return.bin");
 }
 
 #endif // HAS_TFT_LVGL_UI

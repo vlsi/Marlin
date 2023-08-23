@@ -35,6 +35,7 @@ GcodeSuite gcode;
 #include "parser.h"
 #include "queue.h"
 #include "../module/motion.h"
+#include "../../src/lcd/extui/mks_ui/draw_ui.h"
 
 #if ENABLED(PRINTCOUNTER)
   #include "../module/printcounter.h"
@@ -70,6 +71,10 @@ GcodeSuite gcode;
 #endif
 
 #include "../MarlinCore.h" // for idle, kill
+
+extern int32_t save_layer_stop_num;
+extern uint8_t layer_stop_flag;
+extern volatile uint8_t G29_COMMAND_FINISHED;
 
 // Inactivity shutdown
 millis_t GcodeSuite::previous_move_ms = 0,
@@ -204,6 +209,16 @@ void GcodeSuite::get_destination_from_command() {
       destination.e = current_position.e;
   #endif
 
+    if(layer_stop_flag == LAYER_STOP_NO_TRIGGERED){
+    if(save_layer_stop_num > 0)
+        {
+        if(IS_SD_PRINTING() &&((int32_t)(destination.z*100) == save_layer_stop_num))
+        {
+            paused_print();
+            layer_stop_flag = LAYER_STOP_TRIGGERED;
+        }
+        }
+    }
   #if ENABLED(POWER_LOSS_RECOVERY) && !PIN_EXISTS(POWER_LOSS)
     // Only update power loss recovery on moves with E
     if (recovery.enabled && IS_SD_PRINTING() && seen.e && (seen.x || seen.y))
@@ -323,6 +338,7 @@ void GcodeSuite::dwell(millis_t time) {
 /**
  * Process the parsed command and dispatch it to its handler
  */
+extern uint8_t Auto_leveling_succse;
 void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
   TERN_(HAS_FANCHECK, fan_check.check_deferred_error());
 
@@ -405,6 +421,11 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
       #if HAS_LEVELING
         case 29:                                                  // G29: Bed leveling calibration
           TERN(G29_RETRY_AND_RECOVER, G29_with_retry, G29)();
+          if(uiCfg.autoLeveling == 1)
+          {
+            uiCfg.autoLeveling = 0;
+            G29_COMMAND_FINISHED = 1;
+          }
           break;
       #endif
 

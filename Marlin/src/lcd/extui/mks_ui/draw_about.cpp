@@ -37,31 +37,96 @@ enum { ID_A_RETURN = 1 };
 
 static void event_handler(lv_obj_t *obj, lv_event_t event) {
   if (event != LV_EVENT_RELEASED) return;
+
+  voice_button_on();
+  hal.delay_ms(100);
+  WRITE(BEEPER_PIN, LOW);
+
   switch (obj->mks_obj_id) {
     case ID_A_RETURN:
-      goto_previous_ui();
+      clear_cur_ui();
+      draw_return_ui();
       break;
   }
 }
 
 void lv_draw_about() {
   scr = lv_screen_create(ABOUT_UI);
-  lv_big_button_create(scr, "F:/bmp_return.bin", common_menu.text_back, BTN_X_PIXEL * 3 + INTERVAL_V * 4, BTN_Y_PIXEL + INTERVAL_H + titleHeight, event_handler, ID_A_RETURN);
 
-  board = lv_label_create(scr, BOARD_INFO_NAME);
-  lv_obj_align(board, nullptr, LV_ALIGN_CENTER, 0, -80);
+  lv_obj_t *labelModel = lv_label_create_empty(scr);
+  lv_obj_t *labelModel_1 = lv_label_create_empty(scr);
+  lv_obj_set_style(labelModel, &tft_style_preHeat_label_BLACK);
+  lv_obj_set_style(labelModel_1, &tft_style_preHeat_label_GRAY);
+  lv_label_set_text(labelModel, about_MENU.printerModel);
+  lv_label_set_text(labelModel_1, ": FlyingBear Reborn2");
+  lv_obj_set_pos(labelModel, 12, 66);
+  lv_obj_align(labelModel_1, labelModel , LV_ALIGN_OUT_RIGHT_MID, 10, 0);
 
-  fw_type = lv_label_create(scr, "Marlin " SHORT_BUILD_VERSION " (" STRING_DISTRIBUTION_DATE ")");
-  lv_obj_align(fw_type, nullptr, LV_ALIGN_CENTER, 0, -50);
+  lv_obj_t *labelVolume = lv_label_create_empty(scr);
+  lv_obj_t *labelVolume_1 = lv_label_create_empty(scr);
+  lv_label_set_text(labelVolume, about_MENU.printVolume);
+  lv_label_set_text(labelVolume_1, ": 325mm*325mm*350mm");
+  lv_obj_set_style(labelVolume, &tft_style_preHeat_label_BLACK);
+  lv_obj_set_style(labelVolume_1, &tft_style_preHeat_label_GRAY);
+  lv_obj_set_pos(labelVolume, 12, 109);
+  lv_obj_align(labelVolume_1, labelVolume , LV_ALIGN_OUT_RIGHT_MID, 10, 0);
 
-  website = lv_label_create(scr, WEBSITE_URL);
-  lv_obj_align(website, nullptr, LV_ALIGN_CENTER, 0, -20);
+  lv_obj_t *labelDiameter = lv_label_create_empty(scr);
+  lv_obj_t *labelDiameter_1 = lv_label_create_empty(scr);
+  lv_label_set_text(labelDiameter, about_MENU.filamentDiameter);
+  lv_label_set_text(labelDiameter_1, ": 1.75mm");
+  lv_obj_set_style(labelDiameter, &tft_style_preHeat_label_BLACK);
+  lv_obj_set_style(labelDiameter_1, &tft_style_preHeat_label_GRAY);
+  lv_obj_set_pos(labelDiameter, 12, 153);
+  lv_obj_align(labelDiameter_1, labelDiameter , LV_ALIGN_OUT_RIGHT_MID, 10, 0);
 
-  uuid = lv_label_create(scr, "UUID: " DEFAULT_MACHINE_UUID);
-  lv_obj_align(uuid, nullptr, LV_ALIGN_CENTER, 0, 10);
+  // lv_obj_t *labelVoltage = lv_label_create_empty(scr);
+  // lv_obj_t *labelVoltage_1 = lv_label_create_empty(scr);
+  // lv_label_set_text(labelVoltage, about_MENU.inputVoltage);
+  // lv_label_set_text(labelVoltage_1, ": AC220V/AC110V");
+  // lv_obj_set_style(labelVoltage, &tft_style_preHeat_label);
+  // lv_obj_set_style(labelVoltage_1, &tft_style_preHeat_label_BLACK);
+  // lv_obj_set_pos(labelVoltage, 12, 168);
+  // lv_obj_align(labelVoltage_1, labelVoltage , LV_ALIGN_OUT_RIGHT_MID, 10, 0);
 
-  protocol = lv_label_create(scr, "Protocol: " PROTOCOL_VERSION);
-  lv_obj_align(protocol, nullptr, LV_ALIGN_CENTER, 0, 40);
+  lv_obj_t *labelVersion = lv_label_create_empty(scr);
+  lv_obj_t *labelVersion_1 = lv_label_create_empty(scr);
+  lv_label_set_text(labelVersion, about_MENU.version);
+  lv_label_set_text(labelVersion_1, ": Reborn2_Auto_V2");//": Reborn2_V2.0_14x02_020"
+  lv_obj_set_style(labelVersion, &tft_style_preHeat_label_BLACK);
+  lv_obj_set_style(labelVersion_1, &tft_style_preHeat_label_GRAY);
+  lv_obj_set_pos(labelVersion, 12, 196);
+  lv_obj_align(labelVersion_1, labelVersion , LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+
+  lv_obj_t *labelSupport = lv_label_create_empty(scr);
+  lv_obj_t *labelSupport_1 = lv_label_create_empty(scr);
+  lv_label_set_text(labelSupport, about_MENU.support);
+  lv_label_set_text(labelSupport_1, ": support@3dflyingbear.com");
+  lv_obj_set_style(labelSupport, &tft_style_preHeat_label_BLACK);
+  lv_obj_set_style(labelSupport_1, &tft_style_preHeat_label_GRAY);
+  lv_obj_set_pos(labelSupport, 12, 237);
+  lv_obj_align(labelSupport_1, labelSupport , LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+
+  lv_obj_t *labelContact = lv_label_create_empty(scr);
+  lv_obj_t *labelContact_1 = lv_label_create_empty(scr);
+  lv_label_set_text(labelContact, about_MENU.contact);
+  lv_label_set_text(labelContact_1, ": adam@3dflyingbear.com");
+  lv_obj_set_style(labelContact, &tft_style_preHeat_label_BLACK);
+  lv_obj_set_style(labelContact_1, &tft_style_preHeat_label_GRAY);
+  lv_obj_set_pos(labelContact, 12, 283);
+  lv_obj_align(labelContact_1, labelContact , LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+
+  // lv_top_return_name(scr, set_menu.about, event_handler, ID_A_RETURN);
+  lv_obj_t *imgtop = lv_obj_create(scr, nullptr);
+  lv_obj_set_style(imgtop, &tft_style_preHeat_BLUE);
+  lv_obj_set_size(imgtop, 480, 50);
+  lv_obj_set_pos(imgtop, 0, 0);
+  lv_obj_t *buttonReturn = lv_imgbtn_create(scr, "F:/bmp_preHeat_return.bin", event_handler, ID_A_RETURN);
+  lv_obj_set_pos(buttonReturn, 6, 3);
+  // lv_refr_now(lv_refr_get_disp_refreshing());
+  lv_obj_t *labelname = lv_label_create_empty(scr);
+  lv_label_set_text(labelname, set_menu.about);
+  lv_obj_align(labelname, buttonReturn , LV_ALIGN_OUT_RIGHT_MID, 10, 0);
 }
 
 void lv_clear_about() {

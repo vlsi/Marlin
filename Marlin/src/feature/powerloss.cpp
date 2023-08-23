@@ -28,6 +28,7 @@
 
 #if ENABLED(POWER_LOSS_RECOVERY)
 
+bool recoveryed_flag = false;
 #include "powerloss.h"
 #include "../core/macros.h"
 
@@ -197,6 +198,7 @@ void PrintJobRecovery::save(const bool force/*=false*/, const float zraise/*=POW
     // Machine state
     // info.sdpos and info.current_position are pre-filled from the Stepper ISR
 
+    info.current_position = current_position;
     info.feedrate = uint16_t(MMS_TO_MMM(feedrate_mm_s));
     info.zraise = zraise;
     info.flag.raised = raised;                      // Was Z raised before power-off?

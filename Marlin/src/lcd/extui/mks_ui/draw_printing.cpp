@@ -26,6 +26,7 @@
 
 #include "draw_ui.h"
 #include <lv_conf.h>
+#include "../../../module/planner.h"
 
 #include "../../../MarlinCore.h" // for marlin_state
 #include "../../../module/temperature.h"
@@ -39,16 +40,17 @@
   #include "../../../feature/powerloss.h"
 #endif
 
-#if ENABLED(SET_REMAINING_TIME)
+#if BOTH(LCD_SET_PROGRESS_MANUALLY, USE_M73_REMAINING_TIME)
   #include "../../marlinui.h"
 #endif
 
 extern lv_group_t *g;
+extern uint8_t sel_id;
 static lv_obj_t *scr;
-static lv_obj_t *labelExt1, *labelFan, *labelZpos, *labelTime;
-static lv_obj_t *labelPause, *labelStop, *labelOperat;
-static lv_obj_t *bar1, *bar1ValueText;
-static lv_obj_t *buttonPause, *buttonOperat, *buttonStop, *buttonExt1, *buttonFanstate, *buttonZpos;
+static lv_obj_t *labelExt1, *labelFan, *labelZpos, *labelTime, *labelSpeed, *labelUp, *labelFlowSpeed, *labelHeat;
+// static lv_obj_t *labelPause, *labelStop, *labelOperat;
+static lv_obj_t *bar1, *bar1ValueText, *gcodeName;
+static lv_obj_t *buttonPause, *buttonOperat, *buttonStop, *buttonExt1, *buttonFanstate, *buttonZpos, *buttonSpeed, *buttonUp, *buttonMore;
 
 #if HAS_MULTI_EXTRUDER
   static lv_obj_t *labelExt2;
@@ -56,8 +58,8 @@ static lv_obj_t *buttonPause, *buttonOperat, *buttonStop, *buttonExt1, *buttonFa
 #endif
 
 #if HAS_HEATED_BED
-  static lv_obj_t* labelBed;
-  static lv_obj_t* buttonBedstate;
+  static lv_obj_t *labelBed;
+  static lv_obj_t *buttonBedstate;
 #endif
 
 enum {
@@ -67,43 +69,65 @@ enum {
   ID_TEMP_EXT,
   ID_TEMP_BED,
   ID_BABYSTEP,
-  ID_FAN
+  ID_FAN,
+  ID_MOVSPEED,
+  ID_PRINT_SPEED_CHANGE,
+  ID_FLOW_SPEED_CHANGE,
+  ID_MORE,
 };
 
 bool once_flag; // = false
 extern bool flash_preview_begin, default_preview_flg, gcode_preview_over;
 extern uint32_t To_pre_view;
+extern int32_t print_times;
+uint8_t fanValue = 0;
+uint8_t layer_stop_flag = LAYER_STOP_NO_TRIGGERED;
+
+void paused_print() {
+  #if ENABLED(SDSUPPORT)
+    card.pauseSDPrint();
+    stop_print_time();
+    uiCfg.print_state = PAUSING;
+    if (disp_state == PRINTING_UI) {
+        lv_imgbtn_set_src_both(buttonPause, "F:/bmp_continue.bin");
+    }
+  #endif
+}
 
 static void event_handler(lv_obj_t *obj, lv_event_t event) {
   if (event != LV_EVENT_RELEASED) return;
+
+  voice_button_on();
+  _delay_ms(100);
+  WRITE(BEEPER_PIN, LOW);
+
   if (gcode_preview_over) return;
   switch (obj->mks_obj_id) {
     case ID_PAUSE:
       if (uiCfg.print_state == WORKING) {
+// lv_clear_printing();
+// lv_draw_dialog(DIALOG_TYPE_PAUSE);
         #if ENABLED(SDSUPPORT)
           card.pauseSDPrint();
           stop_print_time();
           uiCfg.print_state = PAUSING;
         #endif
-        lv_imgbtn_set_src_both(buttonPause, "F:/bmp_resume.bin");
-        lv_label_set_text(labelPause, printing_menu.resume);
-        lv_obj_align(labelPause, buttonPause, LV_ALIGN_CENTER, 30, 0);
-      }
-      else if (uiCfg.print_state == PAUSED) {
+        lv_imgbtn_set_src_both(buttonPause, "F:/bmp_continue.bin");
+      } else if (uiCfg.print_state == PAUSED) {
+        if (layer_stop_flag == LAYER_STOP_TRIGGERED) {
+            layer_stop_flag = LAYER_STOP_CANNOT_TRIGGER;
+        }
         uiCfg.print_state = RESUMING;
-        lv_imgbtn_set_src_both(obj, "F:/bmp_pause.bin");
-        lv_label_set_text(labelPause, printing_menu.pause);
-        lv_obj_align(labelPause, buttonPause, LV_ALIGN_CENTER, 30, 0);
+        start_print_time();
+        lv_imgbtn_set_src_both(buttonPause, "F:/bmp_pause.bin");
       }
       #if ENABLED(POWER_LOSS_RECOVERY)
         else if (uiCfg.print_state == REPRINTING) {
           uiCfg.print_state = REPRINTED;
-          lv_imgbtn_set_src_both(obj, "F:/bmp_pause.bin");
-          lv_label_set_text(labelPause, printing_menu.pause);
-          lv_obj_align(labelPause, buttonPause, LV_ALIGN_CENTER, 30, 0);
           print_time.minutes = recovery.info.print_job_elapsed / 60;
           print_time.seconds = recovery.info.print_job_elapsed % 60;
-          print_time.hours   = print_time.minutes / 60;
+          print_time.hours = print_time.minutes / 60;
+          lv_imgbtn_set_src_both(buttonPause, "F:/bmp_pause.bin");
         }
       #endif
       break;
@@ -116,113 +140,244 @@ static void event_handler(lv_obj_t *obj, lv_event_t event) {
       lv_draw_operation();
       break;
     case ID_TEMP_EXT:
-      uiCfg.curTempType = 0;
+      // uiCfg.curTempType = 0;
+      // lv_clear_printing();
+      // lv_draw_preHeat();
+      temp_value = ext_heat;
+      keyboard_value = GTempsetting;
       lv_clear_printing();
-      lv_draw_preHeat();
+      lv_draw_numkeyboard();
       break;
     case ID_TEMP_BED:
-      uiCfg.curTempType = 1;
+      // uiCfg.curTempType = 1;
+      // lv_clear_printing();
+      // lv_draw_preHeat();
+      temp_value = bed_heat;
+      keyboard_value = GTempsetting;
       lv_clear_printing();
-      lv_draw_preHeat();
+      lv_draw_numkeyboard();
       break;
     case ID_BABYSTEP:
       lv_clear_printing();
       lv_draw_baby_stepping();
       break;
     case ID_FAN:
+      // switch(fanValue)
+      // {
+      //   case 0: fanValue = 50; break;
+      //   case 50: fanValue = 100; break;
+      //   case 100: fanValue = 0; break;
+      // }
+      // thermalManager.set_fan_speed(0, map(fanValue, 0, 100, 0, 255));
+      temp_value = fan_speed;
+      keyboard_value = GTempsetting;
       lv_clear_printing();
-      lv_draw_fan();
+      lv_draw_numkeyboard();
       break;
-  }
+    case ID_MOVSPEED:
+      switch (uiCfg.extruSpeed) {
+        case uiCfg.eSpeedL:
+          uiCfg.extruSpeed = uiCfg.eSpeedN;
+          break;
+        case uiCfg.eSpeedN:
+          uiCfg.extruSpeed = uiCfg.eSpeedH;
+          break;
+        case uiCfg.eSpeedH:
+          uiCfg.extruSpeed = uiCfg.eSpeedL;
+          break;
+      }
+      break;
+    case ID_PRINT_SPEED_CHANGE:
+      temp_value = print_speed;
+      keyboard_value = GTempsetting;
+      lv_clear_printing();
+      lv_draw_numkeyboard();
+
+      break;
+    case ID_FLOW_SPEED_CHANGE:
+      temp_value = ext_speed;
+      keyboard_value = GTempsetting;
+      lv_clear_printing();
+      lv_draw_numkeyboard();
+      break;
+    case ID_MORE:
+      lv_clear_printing();
+      lv_draw_operation();
+      break;
+    default:
+        break;
+    }
 }
 
 void lv_draw_printing() {
+  static lv_style_t label_big_black;
+
+  lv_style_copy(&label_big_black, &tft_style_preHeat_label);
+  label_big_black.text.font = &gb2312_puhui32;
+
   disp_state_stack._disp_index = 0;
   ZERO(disp_state_stack._disp_state);
   scr = lv_screen_create(PRINTING_UI);
 
-  // Create image buttons
-  buttonExt1 = lv_imgbtn_create(scr, "F:/bmp_ext1_state.bin", 206, 136, event_handler, ID_TEMP_EXT);
+  labelHeat = lv_label_create_empty(scr);
+  lv_label_set_text(labelHeat, printing_MENU.heating);
+  lv_label_set_style(labelHeat, LV_LABEL_STYLE_MAIN, &label_big_black); // tft_style_preHeat_label_BLACK
+  lv_obj_set_pos(labelHeat, 10, 10);
 
-  #if HAS_MULTI_EXTRUDER
-    buttonExt2 = lv_imgbtn_create(scr, "F:/bmp_ext2_state.bin", 350, 136, event_handler, ID_TEMP_EXT);
-  #endif
-
-  #if HAS_HEATED_BED
-    buttonBedstate = lv_imgbtn_create(scr, "F:/bmp_bed_state.bin", 206, 186, event_handler, ID_TEMP_BED);
-  #endif
-
-  buttonFanstate = lv_imgbtn_create(scr, "F:/bmp_fan_state.bin", 350, 186, event_handler, ID_FAN);
+  lv_obj_t *imgflowspeed = lv_img_create(scr, nullptr);
+  lv_img_set_src(imgflowspeed, "F:/bmp_prints_state.bin");
+  lv_obj_set_pos(imgflowspeed, 110, 4);
+  labelFlowSpeed = lv_label_create_empty(scr);
+  // lv_label_set_text(labelFlowSpeed, "000.0mm/s");
+  dtostrf(feedrate_mm_s, 1, 1, public_buf_l);
+  strcat(public_buf_l, "mm/s");
+  lv_label_set_text(labelFlowSpeed, public_buf_l);
+  lv_label_set_style(labelFlowSpeed, LV_LABEL_STYLE_MAIN, &label_big_black);
+  // lv_obj_set_pos(labelFlowSpeed , 160, 12);
+  lv_obj_align(labelFlowSpeed, imgflowspeed, LV_ALIGN_OUT_RIGHT_BOTTOM, 5, 0);
+  lv_refr_now(lv_refr_get_disp_refreshing());
 
   lv_obj_t *buttonTime = lv_img_create(scr, nullptr);
   lv_img_set_src(buttonTime, "F:/bmp_time_state.bin");
-  lv_obj_set_pos(buttonTime, 206, 86);
+  lv_obj_set_pos(buttonTime, 260, 10);
 
-  buttonZpos = lv_imgbtn_create(scr, "F:/bmp_zpos_state.bin", 350, 86, event_handler, ID_BABYSTEP);
+  labelTime = lv_label_create_empty(scr);
+  sprintf_P(public_buf_l, PSTR("%d%d:%d%d:%d%d"), print_time.hours / 10, print_time.hours % 10, print_time.minutes / 10, print_time.minutes % 10, print_time.seconds / 10, print_time.seconds % 10);
+  strcpy(print_finish_time, public_buf_l);
+  lv_label_set_text(labelTime, public_buf_l);
+  lv_obj_set_style(labelTime, &label_big_black);
+  lv_obj_align(labelTime, buttonTime, LV_ALIGN_OUT_RIGHT_BOTTOM, 5, 0);
+  lv_refr_now(lv_refr_get_disp_refreshing());
 
-  buttonPause  = lv_imgbtn_create(scr, uiCfg.print_state == WORKING ? "F:/bmp_pause.bin" : "F:/bmp_resume.bin", 5, 240, event_handler, ID_PAUSE);
-  buttonStop   = lv_imgbtn_create(scr, "F:/bmp_stop.bin", 165, 240, event_handler, ID_STOP);
-  buttonOperat = lv_imgbtn_create(scr, "F:/bmp_operate.bin", 325, 240, event_handler, ID_OPTION);
+  labelZpos = lv_label_create_empty(scr);
+  char buf[30] = "Z:";
+  strcat(buf, dtostrf(current_position.z, 1, 2, public_buf_l));
+  lv_label_set_text(labelZpos, buf);
+  lv_label_set_style(labelZpos, LV_LABEL_STYLE_MAIN, &label_big_black);
+  lv_obj_set_pos(labelZpos, 395, 4);
 
-  #if HAS_ROTARY_ENCODER
-    if (gCfgItems.encoder_enable) {
-      lv_group_add_obj(g, buttonPause);
-      lv_group_add_obj(g, buttonStop);
-      lv_group_add_obj(g, buttonOperat);
-      lv_group_add_obj(g, buttonPause);
-      lv_group_add_obj(g, buttonPause);
-      lv_group_add_obj(g, buttonPause);
-    }
+  // create progress bar
+
+  static lv_style_t bar_yellow, bar_white;
+
+  lv_style_copy(&bar_yellow, &label_big_black);
+  bar_yellow.body.main_color = LV_COLOR_MAKE(0xff, 0xa2, 0x10);
+  bar_yellow.body.grad_color = LV_COLOR_MAKE(0xff, 0xa2, 0x10);
+
+  lv_style_copy(&bar_white, &bar_yellow);
+  bar_white.body.main_color = LV_COLOR_WHITE;
+  bar_white.body.grad_color = LV_COLOR_WHITE;
+
+  bar1 = lv_bar_create(scr, nullptr);
+  lv_obj_set_pos(bar1, 0, 36);
+  lv_obj_set_size(bar1, 480, 45);
+  lv_bar_set_style(bar1, LV_BAR_STYLE_INDIC, &bar_yellow);
+  lv_bar_set_style(bar1, LV_BAR_STYLE_BG, &bar_white);
+  lv_bar_set_anim_time(bar1, 1000);
+  lv_bar_set_value(bar1, 0, LV_ANIM_ON);
+
+  gcodeName = lv_label_create_empty(bar1);
+  lv_label_set_text(gcodeName, list_file.long_name[sel_id]);
+  lv_label_set_style(gcodeName, LV_LABEL_STYLE_MAIN, &label_big_black);
+  lv_obj_align(gcodeName, bar1, LV_ALIGN_IN_LEFT_MID, 10, 0);
+
+  bar1ValueText = lv_label_create_empty(bar1);
+  lv_label_set_text(bar1ValueText, "0%");
+  // sprintf_P(public_buf_l, "%d%%", uiCfg.print_progress);
+  // lv_label_set_text(bar1ValueText, public_buf_l);
+  lv_label_set_style(bar1ValueText, LV_LABEL_STYLE_MAIN, &label_big_black);
+  lv_obj_align(bar1ValueText, bar1, LV_ALIGN_IN_RIGHT_MID, -30, 0);
+  // lv_refr_now(lv_refr_get_disp_refreshing());
+
+  // Create image buttons
+  buttonExt1 = lv_imgbtn_create(scr, "F:/bmp_ext1_state.bin", 243, 82, event_handler, ID_TEMP_EXT);
+  labelExt1 = lv_label_create_empty(scr);
+  sprintf(public_buf_l, TEXT_VALUE_CN, thermalManager.wholeDegHotend(0), thermalManager.degTargetHotend(0)); // preheat_menu.value_state
+  lv_label_set_text(labelExt1, public_buf_l);
+  lv_label_set_style(labelExt1, LV_LABEL_STYLE_MAIN, &label_big_black);
+  lv_obj_align(labelExt1, buttonExt1, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+  // lv_refr_now(lv_refr_get_disp_refreshing());
+
+  // #if HAS_MULTI_EXTRUDER
+  //   buttonExt2 = lv_imgbtn_create(scr, "F:/bmp_ext2_state.bin", 350, 136, event_handler, ID_TEMP_EXT);
+  // #endif
+
+  #if HAS_HEATED_BED
+    buttonBedstate = lv_imgbtn_create(scr, "F:/bmp_bed_state.bin", 243, 173, event_handler, ID_TEMP_BED);
+    labelBed = lv_label_create_empty(scr);
+    sprintf(public_buf_l, TEXT_VALUE_CN, thermalManager.wholeDegBed(), thermalManager.degTargetBed());
+    lv_label_set_text(labelBed, public_buf_l);
+    lv_label_set_style(labelBed, LV_LABEL_STYLE_MAIN, &label_big_black);
+    lv_obj_align(labelBed, buttonBedstate, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+    // lv_refr_now(lv_refr_get_disp_refreshing());
   #endif
 
-  labelExt1 = lv_label_create(scr, 250, 146, nullptr);
+  // buttonFanstate = lv_imgbtn_create(scr, "F:/bmp_fan_state.bin", 230, 168, event_handler, ID_FAN);
+  // labelFan  = lv_label_create_empty(scr);
+  // sprintf_P(public_buf_l, PSTR("%d%%"), (int)thermalManager.fanSpeedPercent(0));
+  // lv_label_set_text(labelFan, public_buf_l);
+  // lv_label_set_style(labelFan, LV_LABEL_STYLE_MAIN, &label_big_black);
+  // lv_obj_align(labelFan , buttonFanstate, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+
+  buttonSpeed = lv_imgbtn_create(scr, "F:/bmp_movs_state.bin", 383, 82, event_handler, ID_PRINT_SPEED_CHANGE);
+  labelSpeed = lv_label_create_empty(scr);
+  sprintf_P(buf, PSTR("%d%%"), feedrate_percentage);
+  lv_label_set_text(labelSpeed, buf);
+  lv_label_set_style(labelSpeed, LV_LABEL_STYLE_MAIN, &label_big_black);
+  lv_obj_align(labelSpeed, buttonSpeed, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+
+  buttonUp = lv_imgbtn_create(scr, "F:/bmp_flows_state.bin", 383, 173, event_handler, ID_FLOW_SPEED_CHANGE);
+  labelUp = lv_label_create_empty(scr);
+  sprintf_P(buf, PSTR("%d%%"), planner.flow_percentage[0]);
+  lv_label_set_text(labelUp, buf);
+  lv_label_set_style(labelUp, LV_LABEL_STYLE_MAIN, &label_big_black);
+  lv_obj_align(labelUp, buttonUp, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+  // lv_refr_now(lv_refr_get_disp_refreshing());
+
+  if (uiCfg.print_state == WORKING || uiCfg.print_state == RESUMING)
+    buttonPause = lv_imgbtn_create(scr, "F:/bmp_pause.bin", 310, 252, event_handler, ID_PAUSE);
+  else
+    buttonPause = lv_imgbtn_create(scr, "F:/bmp_continue.bin", 310, 252, event_handler, ID_PAUSE);
+
+  buttonStop = lv_imgbtn_create(scr, "F:/bmp_stop.bin", 234, 252, event_handler, ID_STOP);
+  buttonMore = lv_imgbtn_create(scr, "F:/bmp_print_more.bin", 410, 252, event_handler, ID_MORE);
+
+  lv_obj_align(buttonPause, buttonStop, LV_ALIGN_OUT_RIGHT_TOP, 13, 2);
+  lv_obj_align(buttonMore, buttonPause, LV_ALIGN_OUT_RIGHT_TOP, 13, 0);
+
+  // #if HAS_ROTARY_ENCODER
+  //   if (gCfgItems.encoder_enable) {
+  //     lv_group_add_obj(g, buttonPause);
+  //     lv_group_add_obj(g, buttonStop);
+  //     lv_group_add_obj(g, buttonOperat);
+  //     lv_group_add_obj(g, buttonPause);
+  //     lv_group_add_obj(g, buttonPause);
+  //     lv_group_add_obj(g, buttonPause);
+  //   }
+  // #endif
 
   #if HAS_MULTI_EXTRUDER
     labelExt2 = lv_label_create(scr, 395, 146, nullptr);
   #endif
 
   #if HAS_HEATED_BED
-    labelBed = lv_label_create(scr, 250, 196, nullptr);
   #endif
 
-  labelFan  = lv_label_create(scr, 395, 196, nullptr);
-  labelTime = lv_label_create(scr, 250, 96, nullptr);
-  labelZpos = lv_label_create(scr, 395, 96, nullptr);
+  disp_print_time(); // 已花费时间刷新
+  disp_fan_Zpos();   // Z点偏移刷新
+  disp_ext_temp();   // 挤出头温度刷新
+  disp_bed_temp();   // 热床温度刷新
+  // disp_fan_speed();//风扇速度刷新
+  disp_print_speed_change();
+  disp_printing_ext_speed();
+  setProBarRate();
 
-  labelPause  = lv_label_create_empty(buttonPause);
-  labelStop   = lv_label_create_empty(buttonStop);
-  labelOperat = lv_label_create_empty(buttonOperat);
-
-  if (gCfgItems.multiple_language) {
-    lv_label_set_text(labelPause, uiCfg.print_state == WORKING ? printing_menu.pause : printing_menu.resume);
-    lv_obj_align(labelPause, buttonPause, LV_ALIGN_CENTER, 20, 0);
-
-    lv_label_set_text(labelStop, printing_menu.stop);
-    lv_obj_align(labelStop, buttonStop, LV_ALIGN_CENTER, 20, 0);
-
-    lv_label_set_text(labelOperat, printing_menu.option);
-    lv_obj_align(labelOperat, buttonOperat, LV_ALIGN_CENTER, 20, 0);
-  }
-
-  bar1 = lv_bar_create(scr, nullptr);
-  lv_obj_set_pos(bar1, 205, 36);
-  lv_obj_set_size(bar1, 270, 40);
-  lv_bar_set_style(bar1, LV_BAR_STYLE_INDIC, &lv_bar_style_indic);
-  lv_bar_set_anim_time(bar1, 1000);
-  lv_bar_set_value(bar1, 0, LV_ANIM_ON);
-  bar1ValueText = lv_label_create_empty(bar1);
-  lv_label_set_text(bar1ValueText, "0%");
-  lv_obj_align(bar1ValueText, bar1, LV_ALIGN_CENTER, 0, 0);
-
-  disp_ext_temp();
-  disp_bed_temp();
-  disp_fan_speed();
-  disp_print_time();
-  disp_fan_Zpos();
+  // lv_refr_now(lv_refr_get_disp_refreshing());
+  // lv_img_set_src(imgflowspeed, "F:/bmp_prints_state.bin");
 }
 
 void disp_ext_temp() {
-  sprintf(public_buf_l, printing_menu.temp1, thermalManager.wholeDegHotend(0), thermalManager.degTargetHotend(0));
+  sprintf(public_buf_l, TEXT_VALUE_CN, thermalManager.wholeDegHotend(0), thermalManager.degTargetHotend(0)); // preheat_menu.value_state
   lv_label_set_text(labelExt1, public_buf_l);
 
   #if HAS_MULTI_EXTRUDER
@@ -233,7 +388,7 @@ void disp_ext_temp() {
 
 void disp_bed_temp() {
   #if HAS_HEATED_BED
-    sprintf(public_buf_l, printing_menu.bed_temp, thermalManager.wholeDegBed(), thermalManager.degTargetBed());
+    sprintf(public_buf_l, TEXT_VALUE_CN, thermalManager.wholeDegBed(), thermalManager.degTargetBed());
     lv_label_set_text(labelBed, public_buf_l);
   #endif
 }
@@ -244,18 +399,21 @@ void disp_fan_speed() {
 }
 
 void disp_print_time() {
-  #if ENABLED(SET_REMAINING_TIME)
+  #if BOTH(LCD_SET_PROGRESS_MANUALLY, USE_M73_REMAINING_TIME)
     const uint32_t r = ui.get_remaining_time();
     sprintf_P(public_buf_l, PSTR("%02d:%02d R"), r / 3600, (r % 3600) / 60);
   #else
     sprintf_P(public_buf_l, PSTR("%d%d:%d%d:%d%d"), print_time.hours / 10, print_time.hours % 10, print_time.minutes / 10, print_time.minutes % 10, print_time.seconds / 10, print_time.seconds % 10);
   #endif
+  strcpy(print_finish_time, public_buf_l);
   lv_label_set_text(labelTime, public_buf_l);
 }
 
 void disp_fan_Zpos() {
-  dtostrf(current_position.z, 1, 3, public_buf_l);
-  lv_label_set_text(labelZpos, public_buf_l);
+  // dtostrf(current_position.z, 1, 3, public_buf_l);
+  char buf[30] = "Z:";
+  strcat(buf, dtostrf(current_position.z, 1, 2, public_buf_l));
+  lv_label_set_text(labelZpos, buf);
 }
 
 void reset_print_time() {
@@ -288,32 +446,13 @@ void setProBarRate() {
 
   if (rate <= 0) return;
 
+  uiCfg.print_progress = rate;
+
   if (disp_state == PRINTING_UI) {
     lv_bar_set_value(bar1, rate, LV_ANIM_ON);
     sprintf_P(public_buf_l, "%d%%", rate);
     lv_label_set_text(bar1ValueText, public_buf_l);
-    lv_obj_align(bar1ValueText, bar1, LV_ALIGN_CENTER, 0, 0);
-
-    if (marlin_state == MF_SD_COMPLETE) {
-      if (once_flag == 0) {
-        stop_print_time();
-
-        flash_preview_begin = false;
-        default_preview_flg = false;
-        lv_clear_printing();
-        lv_draw_dialog(DIALOG_TYPE_FINISH_PRINT);
-
-        once_flag = true;
-
-        #if HAS_SUICIDE
-          if (gCfgItems.finish_power_off) {
-            gcode.process_subcommands_now(F("M1001"));
-            queue.inject(F("M81"));
-            marlin_state = MF_RUNNING;
-          }
-        #endif
-      }
-    }
+    lv_obj_align(bar1ValueText, bar1, LV_ALIGN_IN_RIGHT_MID, 0, 0);
   }
 }
 
@@ -322,6 +461,25 @@ void lv_clear_printing() {
     if (gCfgItems.encoder_enable) lv_group_remove_all_objs(g);
   #endif
   lv_obj_del(scr);
+}
+
+void disp_print_speed_change() {
+  char buf[30] = {0};
+  int16_t val;
+
+  val = feedrate_percentage;
+  sprintf_P(buf, PSTR("%d%%"), val);
+  lv_label_set_text(labelSpeed, buf);
+
+  val = planner.flow_percentage[0];
+  sprintf_P(buf, PSTR("%d%%"), val);
+  lv_label_set_text(labelUp, buf);
+}
+
+void disp_printing_ext_speed() {
+  dtostrf(feedrate_mm_s, 1, 1, public_buf_l);
+  strcat(public_buf_l, "mm/s");
+  lv_label_set_text(labelFlowSpeed, public_buf_l);
 }
 
 #endif // HAS_TFT_LVGL_UI

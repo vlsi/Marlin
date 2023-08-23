@@ -31,7 +31,7 @@ void disp_wifi_list();
 void cutWifiName(char *name, int len, char *outStr);
 void wifi_scan_handle();
 
-#define NUMBER_OF_PAGE 5
+#define NUMBER_OF_PAGE 6
 
 #define WIFI_TOTAL_NUMBER 20
 #define WIFI_NAME_BUFFER_SIZE 33

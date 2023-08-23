@@ -28,11 +28,25 @@
 #define MIN_EXT_SPEED_PERCENT    10
 #define MAX_EXT_SPEED_PERCENT   999
 
+#define MIN_PRINT_SPEED          20
+#define MAX_PRINT_SPEED          200
+
+#define MIN_EXT_SPEED            0
+#define MAX_EXT_SPEED            900
+
+
+#define MIN_EXT_HEAT            0
+#define MAX_EXT_HEAT            400
+
+#define MIN_BED_HEAT            0
+#define MAX_BED_HEAT            120
+
 void lv_draw_change_speed();
 void lv_clear_change_speed();
 void disp_speed_step();
 void disp_print_speed();
 void disp_speed_type();
+void lv_draw_print_speed_change();
 
 #ifdef __cplusplus
   } /* C-declarations for C++ */

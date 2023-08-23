@@ -60,6 +60,10 @@
   #include "../../lcd/e3v2/proui/dwin.h"
 #endif
 
+#if HAS_TFT_LVGL_UI
+  #include "../../lcd/extui/mks_ui/draw_ui.h"
+#endif
+
 #if ENABLED(LASER_FEATURE)
   #include "../../feature/spindle_laser.h"
 #endif
@@ -202,7 +206,11 @@
  *  Y   Home to the Y endstop
  *  Z   Home to the Z endstop
  */
+extern bool Emergemcy_flog;
+extern uint8_t wait_for_g28_flag;
+
 void GcodeSuite::G28() {
+    Emergemcy_flog = 0;
   DEBUG_SECTION(log_G28, "G28", DEBUGGING(LEVELING));
   if (DEBUGGING(LEVELING)) log_machine_info();
 
@@ -624,4 +632,12 @@ void GcodeSuite::G28() {
 
   TERN_(FULL_REPORT_TO_HOST_FEATURE, set_and_report_grblstate(old_grblstate));
 
+   set_bed_leveling_enabled(true);
+
+   if(wait_for_g28_flag)
+   {
+        wait_for_g28_flag = 0;
+        clear_cur_ui();
+        lv_draw_auto_leveling();
+   }
 }

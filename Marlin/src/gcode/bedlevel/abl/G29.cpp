@@ -30,6 +30,7 @@
 
 #include "../../gcode.h"
 #include "../../../feature/bedlevel/bedlevel.h"
+#include "../../../lcd/extui/mks_ui/draw_ui.h"
 #include "../../../module/motion.h"
 #include "../../../module/planner.h"
 #include "../../../module/probe.h"
@@ -260,7 +261,7 @@ G29_TYPE GcodeSuite::G29() {
     process_subcommands_now(TERN(CAN_SET_LEVELING_AFTER_G28, F("G28L0"), FPSTR(G28_STR)));
 
   // Don't allow auto-leveling without homing first
-  if (homing_needed_error()) G29_RETURN(false, false);
+//   if (homing_needed_error()) G29_RETURN(false, false);
 
   // 3-point leveling gets points from the probe class
   #if ENABLED(AUTO_BED_LEVELING_3POINT)
@@ -728,6 +729,7 @@ G29_TYPE GcodeSuite::G29() {
 
             const float z = abl.measured_z + abl.Z_offset;
             abl.z_values[abl.meshCount.x][abl.meshCount.y] = z;
+            bedlevel.z_values[abl.meshCount.x][abl.meshCount.y] = abl.z_values[abl.meshCount.x][abl.meshCount.y];
             TERN_(EXTENSIBLE_UI, ExtUI::onMeshUpdate(abl.meshCount, z));
 
           #endif
@@ -802,7 +804,7 @@ G29_TYPE GcodeSuite::G29() {
         bedlevel.print_leveling_grid(&abl.z_values);
       else {
         bedlevel.set_grid(abl.gridSpacing, abl.probe_position_lf);
-        COPY(bedlevel.z_values, abl.z_values);
+        memcpy(bedlevel.z_values, abl.z_values,sizeof(bedlevel.z_values));
         TERN_(IS_KINEMATIC, bedlevel.extrapolate_unprobed_bed_level());
         bedlevel.refresh_bed_level();
 

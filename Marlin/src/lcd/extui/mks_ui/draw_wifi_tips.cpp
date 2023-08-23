@@ -42,21 +42,39 @@ void lv_draw_wifi_tips() {
 
   scr = lv_screen_create(WIFI_TIPS_UI, "");
 
+  lv_obj_t *imgtop = lv_obj_create(scr, nullptr);
+  lv_obj_set_style(imgtop, &tft_style_preHeat_BLUE);
+  lv_obj_set_size(imgtop, 480, 50);
+  lv_obj_set_pos(imgtop, 0, 0);
+  
+  lv_obj_t *labelname = lv_label_create_empty(imgtop);
+  lv_label_set_text(labelname,"WIFI");
+  lv_obj_align(labelname, imgtop, LV_ALIGN_IN_LEFT_MID, 0, 0);
+
   wifi_name = lv_label_create(scr, (const char *)wifi_list.wifiName[wifi_list.nameIndex]);
-  lv_obj_align(wifi_name, nullptr, LV_ALIGN_CENTER, 0, -20);
+  lv_obj_set_style(wifi_name, &tft_style_preHeat_label_BLACK);
+  lv_obj_set_pos(wifi_name, 143, 134);
+  // lv_obj_align(wifi_name, nullptr, LV_ALIGN_CENTER, 0, -20);
 
   text_tips = lv_label_create_empty(scr);
+  lv_obj_set_style(text_tips, &tft_style_preHeat_label);
   if (wifi_tips_type == TIPS_TYPE_JOINING) {
     lv_label_set_text(text_tips, tips_menu.joining);
-    lv_obj_align(text_tips, nullptr, LV_ALIGN_CENTER, 0, -60);
+    lv_obj_set_style(text_tips, &tft_style_preHeat_label_BLACK);
+    lv_obj_align(text_tips, wifi_name, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+    // lv_obj_set_pos(text_tips, 80, 173);
   }
   else if (wifi_tips_type == TIPS_TYPE_TAILED_JOIN) {
     lv_label_set_text(text_tips, tips_menu.failedJoin);
-    lv_obj_align(text_tips, nullptr, LV_ALIGN_CENTER, 0, -60);
+    lv_obj_set_style(text_tips, &tft_style_preHeat_label_BLACK);
+    lv_obj_align(text_tips, wifi_name, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+    // lv_obj_align(text_tips, nullptr, LV_ALIGN_CENTER, 0, -60);
   }
   else if (wifi_tips_type == TIPS_TYPE_WIFI_CONECTED) {
     lv_label_set_text(text_tips, tips_menu.wifiConected);
-    lv_obj_align(text_tips, nullptr, LV_ALIGN_CENTER, 0, -60);
+    lv_obj_set_style(text_tips, &tft_style_preHeat_label_BLACK);
+    lv_obj_align(text_tips, wifi_name, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+    // lv_obj_align(text_tips, nullptr, LV_ALIGN_CENTER, 0, -60);
   }
 
   tips_disp.timer = TIPS_TIMER_START;

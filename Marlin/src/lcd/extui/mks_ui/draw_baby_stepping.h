@@ -25,10 +25,13 @@
   extern "C" {
 #endif
 
+extern bool baby_step_set_data;
+
 void lv_draw_baby_stepping();
 void lv_clear_baby_stepping();
 void disp_baby_step_dist();
 void disp_z_offset_value();
+extern void send_m290();
 
 #ifdef __cplusplus
   } /* C-declarations for C++ */

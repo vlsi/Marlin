@@ -99,6 +99,9 @@
 #define TEMP_1_PIN                          PC2   // TH2
 #define TEMP_BED_PIN                        PC0   // TB1
 
+//led
+#define NEOPIEXL_PIN                        PE7
+
 //
 // Heaters / Fans
 //

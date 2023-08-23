@@ -271,6 +271,7 @@ xyz_long_t Stepper::endstops_trigsteps;
 xyze_long_t Stepper::count_position{0};
 xyze_int8_t Stepper::count_direction{0};
 
+
 #define MINDIR(A) (count_direction[_AXIS(A)] < 0)
 #define MAXDIR(A) (count_direction[_AXIS(A)] > 0)
 
@@ -2386,7 +2387,7 @@ uint32_t Stepper::block_phase_isr() {
 
       #if ENABLED(POWER_LOSS_RECOVERY)
         recovery.info.sdpos = current_block->sdpos;
-        recovery.info.current_position = current_block->start_position;
+        //recovery.info.current_position = current_block->start_position;
       #endif
 
       #if ENABLED(DIRECT_STEPPING)
