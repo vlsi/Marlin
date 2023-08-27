@@ -92,7 +92,7 @@ void lv_draw_about() {
   lv_obj_t *labelVersion = lv_label_create_empty(scr);
   lv_obj_t *labelVersion_1 = lv_label_create_empty(scr);
   lv_label_set_text(labelVersion, about_MENU.version);
-  lv_label_set_text(labelVersion_1, ": Reborn2_Auto_V2");//": Reborn2_V2.0_14x02_020"
+  lv_label_set_text(labelVersion_1, ": Reborn2 " SHORT_BUILD_VERSION " (" STRING_DISTRIBUTION_DATE ")");
   lv_obj_set_style(labelVersion, &tft_style_preHeat_label_BLACK);
   lv_obj_set_style(labelVersion_1, &tft_style_preHeat_label_GRAY);
   lv_obj_set_pos(labelVersion, 12, 196);
