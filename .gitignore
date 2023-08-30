@@ -105,6 +105,9 @@ applet/
 .gcc-flags.json
 /lib/
 
+# Build directory
+/build/
+
 # Secure Credentials
 Configuration_Secure.h
 

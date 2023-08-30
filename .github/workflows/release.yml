@@ -1,0 +1,61 @@
+name: release
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    name: Build and release
+    runs-on: ubuntu-latest
+    env:
+      OUT_DIR: build/reborn2-marlin
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 200
+        fetch-tags: true
+    - name: Cache pip
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/pip
+          ~/.platformio/.cache
+        key: ${{ runner.os }}-pio
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    - name: Install PlatformIO Core
+      run: |
+        pip install --upgrade platformio
+        mkdir -p $OUT_DIR
+        cp docs/README.md $OUT_DIR
+        echo >> $OUT_DIR/README.md
+        date -I >> $OUT_DIR/README.md
+        git describe --tags >> $OUT_DIR/README.md
+        buildroot/bin/generate_version
+
+    - name: Reborn2, stock
+      run: |
+        pio run --environment reborn2_manual
+        DIR=$OUT_DIR/firmware_reborn2_manual
+        mkdir $DIR
+        cp .pio/build/reborn2_manual/Robin_nano_6.bin $DIR
+    - name: Reborn2, inductive sensor
+      run: |
+        pio run --environment reborn2_inductive
+        DIR=$OUT_DIR/reborn2_inductive_sensor
+        mkdir $DIR
+        cp .pio/build/reborn2_inductive/Robin_nano_6.bin $DIR
+    - name: Upload Firmwares
+      uses: actions/upload-artifact@v3
+      with:
+        name: reborn2-marlin
+        path: |
+          ${{ env.OUT_DIR }}/*
