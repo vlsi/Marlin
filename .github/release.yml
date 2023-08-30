@@ -1,0 +1,40 @@
+name: release
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Cache pip
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/pip
+          ~/.platformio/.cache
+        key: ${{ runner.os }}-pio
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    - name: Install PlatformIO Core
+      run: pip install --upgrade platformio
+
+    - name: Build Reborn2
+      run: pio run --environment mks_robin_nano6
+    - name: Zip Reborn2
+      run: zip -j firmware_reborn2.zip .pio/build/mks_robin_nano6/Robin_nano_6.bin
+    - name: Upload Reborn2
+      uses: actions/upload-artifact@v3
+      with:
+        name: firmware_reborn2.zip
+        path: |
+          firmware_reborn2.zip
