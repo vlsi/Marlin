@@ -10,15 +10,18 @@
 set -e
 
 DIR="${1:-Marlin}"
-READ_FILE="${READ_FILE:-${DIR}/Version.h}"
-WRITE_FILE="${WRITE_FILE:-${READ_FILE}}"
+READ_FILE="${READ_FILE:-${DIR}/VersionTemplate.h}"
+WRITE_FILE="${WRITE_FILE:-${DIR}/_Version.h}"
+
+MARLIN_TAG=$(git describe --tags --match="[0-9]*" --abbrev=0)
 
 BRANCH="$(git -C "${DIR}" symbolic-ref -q --short HEAD 2>/dev/null || true)"
 VERSION="$(git -C "${DIR}" describe --tags --first-parent 2>/dev/null || true)"
 
+SHORT_STRING_DISTRIBUTION_DATE="${SHORT_STRING_DISTRIBUTION_DATE:-$(date '+%Y-%m-%d')}"
 STRING_DISTRIBUTION_DATE="${STRING_DISTRIBUTION_DATE:-$(date '+%Y-%m-%d %H:%M')}"
-SHORT_BUILD_VERSION="${SHORT_BUILD_VERSION:-${BRANCH}}"
-DETAILED_BUILD_VERSION="${DETAILED_BUILD_VERSION:-${BRANCH}-${VERSION}}"
+SHORT_BUILD_VERSION="${SHORT_BUILD_VERSION:-$MARLIN_TAG-$SHORT_STRING_DISTRIBUTION_DATE}"
+DETAILED_BUILD_VERSION="${DETAILED_BUILD_VERSION:-$MARLIN_TAG-$STRING_DISTRIBUTION_DATE-$(git log -1 --pretty=format:%h)}"
 
 # Gets some misc options from their defaults
 DEFAULT_MACHINE_UUID="${DEFAULT_MACHINE_UUID:-$(awk -F'"' \

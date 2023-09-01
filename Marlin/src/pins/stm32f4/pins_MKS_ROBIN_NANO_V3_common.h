@@ -22,10 +22,13 @@
 #pragma once
 
 //
-// MKS Robin Nano V3, MKS Eagle pinmap
+// MKS Robin Nano V3, MKS Eagle, MKS NANO6 pinmap,
 //
 
-#define HAS_OTG_USB_HOST_SUPPORT                  // USB Flash Drive support
+// #define MKS_TEST
+
+// USB Flash Drive support
+#define HAS_OTG_USB_HOST_SUPPORT
 
 // Avoid conflict with TIMER_TONE
 #define STEP_TIMER 10
@@ -56,8 +59,14 @@
 #define X_DIAG_PIN                          PA15
 #define Y_DIAG_PIN                          PD2
 #define Z_DIAG_PIN                          PC8
-#define E0_DIAG_PIN                         PC4
+
+#ifndef E0_DIAG_PIN
+  #define E0_DIAG_PIN                         PC4
+#endif
+
+#ifndef E1_DIAG_PIN
 #define E1_DIAG_PIN                         PE7
+#endif
 
 #define X_STOP_PIN                    X_DIAG_PIN
 #define Y_STOP_PIN                    Y_DIAG_PIN
@@ -67,11 +76,15 @@
 //
 // Steppers
 //
+#ifndef X_ENABLE_PIN
 #define X_ENABLE_PIN                        PE4
+#endif
 #define X_STEP_PIN                          PE3
 #define X_DIR_PIN                           PE2
 
-#define Y_ENABLE_PIN                        PE1
+#ifndef Y_ENABLE_PIN
+  #define Y_ENABLE_PIN                        PE1
+#endif
 #define Y_STEP_PIN                          PE0
 #define Y_DIR_PIN                           PB9
 
@@ -83,9 +96,14 @@
 #define E0_STEP_PIN                         PD6
 #define E0_DIR_PIN                          PD3
 
-#define E1_ENABLE_PIN                       PA3
-#define E1_STEP_PIN                         PD15
-#define E1_DIR_PIN                          PA1
+// #define E1_ENABLE_PIN                       PA3
+// #define E1_STEP_PIN                         PD15
+// #define E1_DIR_PIN                          PA1
+
+#define Z2_ENABLE_PIN                        PA3
+#define Z2_STEP_PIN                          PD15
+#define Z2_DIR_PIN                           PA1
+
 
 #if HAS_TMC_UART
   //
@@ -104,8 +122,8 @@
   #define E0_SERIAL_TX_PIN                  PD9
   #define E0_SERIAL_RX_PIN      E0_SERIAL_TX_PIN
 
-  #define E1_SERIAL_TX_PIN                  PD8
-  #define E1_SERIAL_RX_PIN      E1_SERIAL_TX_PIN
+  // #define E1_SERIAL_TX_PIN                  PD8
+  // #define E1_SERIAL_RX_PIN      E1_SERIAL_TX_PIN
 
   // Reduce baud rate to improve software serial reliability
   #ifndef TMC_BAUD_RATE
@@ -120,14 +138,6 @@
 #define TEMP_0_PIN                          PC1   // TH1
 #define TEMP_1_PIN                          PA2   // TH2
 #define TEMP_BED_PIN                        PC0   // TB1
-
-#if HOTENDS == 1 && !REDUNDANT_TEMP_MATCH(SOURCE, E1)
-  #if TEMP_SENSOR_PROBE
-    #define TEMP_PROBE_PIN            TEMP_1_PIN
-  #elif TEMP_SENSOR_CHAMBER
-    #define TEMP_CHAMBER_PIN          TEMP_1_PIN
-  #endif
-#endif
 
 //
 // Heaters / Fans
@@ -149,20 +159,20 @@
 // Misc. Functions
 //
 #if HAS_TFT_LVGL_UI
-  #define MT_DET_1_PIN                      PA4   // MT_DET
+  // #define MT_DET_1_PIN                      PA4   // MT_DET
   #define MT_DET_2_PIN                      PE6
   #define MT_DET_PIN_STATE                  LOW
 #endif
 
 #ifndef FIL_RUNOUT_PIN
-  #define FIL_RUNOUT_PIN                    PA4
+  #define FIL_RUNOUT_PIN                    MT_DET_1_PIN
 #endif
 #ifndef FIL_RUNOUT2_PIN
-  #define FIL_RUNOUT2_PIN                   PE6
+  #define FIL_RUNOUT2_PIN                   MT_DET_2_PIN
 #endif
 
 #ifndef POWER_LOSS_PIN
-  #define POWER_LOSS_PIN                    PA13  // PW_DET
+  // #define POWER_LOSS_PIN                    PA13  // PW_DET
 #endif
 
 //#define SUICIDE_PIN                       PB2
@@ -175,9 +185,7 @@
 //
 #if ENABLED(MKS_PWC)
   #if ENABLED(TFT_LVGL_UI)
-    #if ENABLED(PSU_CONTROL)
-      #error "PSU_CONTROL is incompatible with MKS_PWC plus TFT_LVGL_UI."
-    #endif
+    #undef PSU_CONTROL
     #undef MKS_PWC
     #define SUICIDE_PIN                     PB2
     #define SUICIDE_PIN_STATE               LOW
@@ -197,6 +205,8 @@
 #ifndef SDCARD_CONNECTION
   #define SDCARD_CONNECTION              ONBOARD
 #endif
+
+#define SDIO_CLOCK                       4500000  // 4.5 MHz
 
 // MKS WIFI MODULE
 #if ENABLED(MKS_WIFI_MODULE)
@@ -307,6 +317,7 @@
   #define TOUCH_MOSI_PIN             EXP2_06_PIN  // SPI1_MOSI
 
   #define LCD_READ_ID                       0xD3
+
   #define LCD_USE_DMA_SPI
 
   #define TFT_BUFFER_WORDS                 14400
@@ -326,6 +337,8 @@
   #ifndef TOUCH_ORIENTATION
     #define TOUCH_ORIENTATION    TOUCH_LANDSCAPE
   #endif
+
+  // #define USE_SPI_DMA_TC
 
 #elif HAS_WIRED_LCD
 

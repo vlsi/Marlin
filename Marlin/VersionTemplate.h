@@ -21,45 +21,32 @@
  */
 #pragma once
 
-//
-// Prefix header for all Marlin sources
-//
+/**
+ * THIS FILE IS A TEMPLATE, SO IT WILL NOT BE USED EXPLICITLY.
+ * buildroot/bin/generate_version generates Marlin/_Version.h based on this template
+ */
 
-#include "MarlinConfigPre.h"
-
-#ifdef __MARLIN_DEPS__
-  #include "../HAL/shared/fauxpins.h"
-#else
-  #include "../HAL/HAL.h"
+/**
+  * The SOURCE_CODE_URL is the location where users will find the Marlin Source
+  * Code which is installed on the device. In most cases —unless the manufacturer
+  * has a distinct Github fork— the Source Code URL should just be the main
+  * Marlin repository.
+  */
+#ifndef SOURCE_CODE_URL
+  #define SOURCE_CODE_URL "github.com/vlsi/reborn2-marlin"
 #endif
 
-#include "../pins/pins.h"
-
-#ifndef __MARLIN_DEPS__
-  #include HAL_PATH(.., timers.h)
-  #include HAL_PATH(.., spi_pins.h)
+/**
+  * Default generic printer UUID.
+  */
+#ifndef DEFAULT_MACHINE_UUID
+  #define DEFAULT_MACHINE_UUID "cede2a2f-41a2-4748-9b12-c55c62f367ff"
 #endif
 
-#include "Conditionals_post.h"
-
-#ifndef __MARLIN_DEPS__
-
-  #include HAL_PATH(.., inc/Conditionals_post.h)
-
-  #include "../core/types.h"  // Ahead of sanity-checks
-
-  #include "Changes.h"
-  #include "SanityCheck.h"
-  #include HAL_PATH(.., inc/SanityCheck.h)
-
-  // Include all core headers
-  #include "../core/language.h"
-  #include "../core/utility.h"
-  #include "../core/mstring.h"
-  #include "../core/serial.h"
-  #include "../core/endianness.h"
-
+/**
+  * The WEBSITE_URL is the location where users can get more information such as
+  * documentation about a specific Marlin release.
+  */
+#ifndef WEBSITE_URL
+  #define WEBSITE_URL "github.com/vlsi/reborn2-marlin"
 #endif
-
-#include "../core/multi_language.h"
-#include "../libs/Segger/log.h"

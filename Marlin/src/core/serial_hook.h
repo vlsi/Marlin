@@ -22,6 +22,7 @@
 #pragma once
 
 #include "serial_base.h"
+void mks_wifi_out_add(uint8_t *data, uint32_t size);
 
 // A mask containing a bitmap of the serial port to act upon
 // This is written to ensure a serial index is never used as a serial mask
@@ -224,7 +225,7 @@ struct MultiSerial : public SerialBase< MultiSerial< REPEAT(NUM_SERIAL, _S_NAME)
   #undef _OUT_MASK
 
   NO_INLINE void write(uint8_t c) {
-    #define _S_WRITE(N) if (portMask.enabled(output[N])) serial##N.write(c);
+    #define _S_WRITE(N) if(N != 1){if (portMask.enabled(output[N])) serial##N.write(c);}else{mks_wifi_out_add((uint8_t *)&c,1);};
     REPEAT(NUM_SERIAL, _S_WRITE);
     #undef _S_WRITE
   }
