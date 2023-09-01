@@ -729,6 +729,8 @@
   #include "stm32f4/pins_MKS_SKIPR_V1_0.h"      // STM32F4                                env:mks_skipr_v1 env:mks_skipr_v1_nobootloader
 #elif MB(TRONXY_V10)
   #include "stm32f4/pins_TRONXY_V10.h"          // STM32F4                                env:STM32F446_tronxy
+#elif MB(MKS_NANO6)
+  #include "stm32f4/pins_MKS_ROBIN_NANO6.h"           // STM32F4                          env:mks_robin_nano6
 
 //
 // ARM Cortex M7
