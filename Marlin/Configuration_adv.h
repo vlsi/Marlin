@@ -600,8 +600,8 @@
  * gets it spinning reliably for a short time before setting the requested speed.
  * (Does not work on Sanguinololu with FAN_SOFT_PWM.)
  */
-//#define FAN_KICKSTART_TIME  100  // (ms)
-//#define FAN_KICKSTART_POWER 180  // 64-255
+#define FAN_KICKSTART_TIME  100  // (ms)
+#define FAN_KICKSTART_POWER 180  // 64-255
 
 // Some coolers may require a non-zero "off" state.
 //#define FAN_OFF_PWM  1
