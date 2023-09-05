@@ -181,6 +181,41 @@ uint8_t utf8_strlen_P(PGM_P pstart) {
   return utf8_strlen_cb(pstart, read_byte_rom);
 }
 
+char *utf8_strncpy(char *dst, const char* src, size_t maxlen) {
+	char *cdst = dst;
+  size_t csize = 0;
+
+	while (*src != 0)
+	{
+		if (*src < 0x80)
+		{
+			*cdst = *src;
+			cdst++;
+			src++;
+      csize++;
+      if (csize >= maxlen)
+      {
+        cdst--;
+        break;
+      }
+		}
+		else
+		{
+			*(uint16_t*)(cdst) = *(uint16_t*)(src);
+			cdst += 2;
+			src += 2;
+      csize += 2;
+      if (csize >= maxlen)
+      {
+        cdst -= 2;
+        break;
+      }
+		}
+	}
+	*cdst = 0;
+	return dst;
+}
+
 static inline uint8_t utf8_byte_pos_by_char_num_cb(const char *pstart, read_byte_cb_t cb_read_byte, const uint8_t charnum) {
   uint8_t *p = (uint8_t *)pstart;
   uint8_t char_idx = 0;
