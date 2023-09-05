@@ -93,7 +93,7 @@ namespace Language_uk {
     LSTR MSG_HOME_OFFSET_Z                  = _UxGT("Зміщ. дому Z");
   #endif
   LSTR MSG_HOME_OFFSETS_APPLIED             = _UxGT("Зміщення прийняті");
-  LSTR MSG_SELECT_ORIGIN                    = _UxGT("Оберіть нуль");
+  LSTR MSG_TW_SELECT_TRAM_REF               = _UxGT("Оберіть нуль");
   #if LCD_WIDTH > 21 || HAS_DWIN_E3V2
     LSTR MSG_LAST_VALUE_SP                  = _UxGT("Останнє значення ");
   #else

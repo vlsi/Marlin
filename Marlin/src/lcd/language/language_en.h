@@ -30,7 +30,7 @@
  * Substitutions are applied for the following characters when used in menu items titles:
  *
  *   $ displays an inserted string
- *   = displays  '0'....'10' for indexes 0 - 10
+ *   { displays  '0'....'10' for indexes 0 - 10
  *   ~ displays  '1'....'11' for indexes 0 - 10
  *   * displays 'E1'...'E11' for indexes 0 - 10 (By default. Uses LCD_FIRST_TOOL)
  *   @ displays an axis name such as XYZUVW, or E for an extruder
@@ -107,9 +107,7 @@ namespace Language_en {
   LSTR MSG_HOME_OFFSET_Y                  = _UxGT("Home Offset Y");
   LSTR MSG_HOME_OFFSET_Z                  = _UxGT("Home Offset Z");
   LSTR MSG_HOME_OFFSETS_APPLIED           = _UxGT("Offsets Applied");
-  LSTR MSG_TRAMMING_WIZARD                = _UxGT("Tramming Wizard");
-  LSTR MSG_SELECT_ORIGIN                  = _UxGT("Select Origin");
-  LSTR MSG_LAST_VALUE_SP                  = _UxGT("Last value ");
+  LSTR MSG_ERR_M428_TOO_FAR               = _UxGT("Err: Too far!");
   #if HAS_PREHEAT
     LSTR MSG_PREHEAT_1                    = _UxGT("Preheat ") PREHEAT_1_LABEL;
     LSTR MSG_PREHEAT_1_H                  = _UxGT("Preheat ") PREHEAT_1_LABEL " ~";
@@ -157,6 +155,7 @@ namespace Language_en {
   LSTR MSG_SWITCH_PS_OFF                  = _UxGT("Switch Power Off");
   LSTR MSG_EXTRUDE                        = _UxGT("Extrude");
   LSTR MSG_RETRACT                        = _UxGT("Retract");
+  LSTR MSG_MEASURE                        = _UxGT("Measure");
   LSTR MSG_MOVE_AXIS                      = _UxGT("Move Axis");
   LSTR MSG_BED_LEVELING                   = _UxGT("Bed Leveling");
   LSTR MSG_LEVEL_BED                      = _UxGT("Level Bed");
@@ -166,6 +165,15 @@ namespace Language_en {
   LSTR MSG_BED_TRAMMING_IN_RANGE          = _UxGT("Corners within tolerance. Bed trammed.");
   LSTR MSG_BED_TRAMMING_GOOD_POINTS       = _UxGT("Good Points: ");
   LSTR MSG_BED_TRAMMING_LAST_Z            = _UxGT("Last Z: ");
+  LSTR MSG_TRAMMING_WIZARD                = _UxGT("Tramming Wizard");
+  LSTR MSG_TW_SELECT_TRAM_REF             = _UxGT("Select Reference Pt");
+  LSTR MSG_TW_SELECT_TRAM_POINT           = _UxGT("Select Pt to Measure");
+  LSTR MSG_TW_MEASURING_REF               = _UxGT("Measuring reference\nZ value at\n");
+  LSTR MSG_TW_SET_AS_REF                  = _UxGT("Set as new Ref Z");
+  LSTR MSG_TW_MENU_MODE_MEASURE           = _UxGT("Menu mode: ") _UxGT("Measure");;
+  LSTR MSG_TW_MENU_MODE_DETAIL            = _UxGT("Menu mode: ") _UxGT("Pt Detail");;
+  LSTR MSG_TW_UNITS_MM                    = _UxGT("Unit: ") _UxGT("mm");
+  LSTR MSG_TW_UNITS_SCREW                 = _UxGT("Unit: ") _UxGT("M{ screw turns");
   LSTR MSG_NEXT_CORNER                    = _UxGT("Next Corner");
   LSTR MSG_MESH_EDITOR                    = _UxGT("Mesh Editor");
   LSTR MSG_MESH_VIEWER                    = _UxGT("Mesh Viewer");
@@ -876,4 +884,5 @@ namespace Language_en {
   LSTR MSG_PID_F                          = _UxGT("PID-F");
   LSTR MSG_PID_F_E                        = _UxGT("PID-F *");
   LSTR MSG_BACKLASH_N                     = _UxGT("@");
+  LSTR MSG_MENU_DIVIDER                   = _UxGT("----------------");
 }

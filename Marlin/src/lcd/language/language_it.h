@@ -30,7 +30,7 @@
  * Substitutions are applied for the following characters when used in menu items titles:
  *
  *   $ displays an inserted string
- *   = displays  '0'....'10' for indexes 0 - 10
+ *   { displays  '0'....'10' for indexes 0 - 10
  *   ~ displays  '1'....'11' for indexes 0 - 10
  *   * displays 'E1'...'E11' for indexes 0 - 10 (By default. Uses LCD_FIRST_TOOL)
  *   @ displays an axis name such as XYZUVW, or E for an extruder
@@ -105,7 +105,6 @@ namespace Language_it {
   LSTR MSG_ERR_M428_TOO_FAR               = _UxGT("Err: Troppo lontano!");
   LSTR MSG_TRAMMING_WIZARD                = _UxGT("Wizard Tramming");
   LSTR MSG_SELECT_ORIGIN                  = _UxGT("Selez. origine");
-  LSTR MSG_LAST_VALUE_SP                  = _UxGT("Ultimo valore ");
   #if HAS_PREHEAT
     LSTR MSG_PREHEAT_1                    = _UxGT("Preriscalda ") PREHEAT_1_LABEL;
     LSTR MSG_PREHEAT_1_H                  = _UxGT("Preriscalda ") PREHEAT_1_LABEL " ~";
