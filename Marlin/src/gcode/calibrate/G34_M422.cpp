@@ -22,7 +22,7 @@
 
 #include "../../inc/MarlinConfigPre.h"
 
-#if EITHER(Z_MULTI_ENDSTOPS, Z_STEPPER_AUTO_ALIGN)
+#if ENABLED(Z_STEPPER_AUTO_ALIGN)
 
 #include "../../feature/z_stepper_align.h"
 
