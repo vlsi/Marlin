@@ -99,7 +99,7 @@ namespace LanguageNarrow_en {
   LSTR MSG_TRAM_BR                        = _UxGT("Back Right");
   LSTR MSG_MANUAL_MESH                    = _UxGT("Manual Mesh");
   LSTR MSG_AUTO_MESH                      = _UxGT("Auto Build Mesh");
-  LSTR MSG_AUTO_Z_ALIGN                   = _UxGT("Auto Z-Align");
+  LSTR MSG_AUTO_Z_ALIGN                   = _UxGT("Z-Align (force till ZMAX)");
   LSTR MSG_ITERATION                      = _UxGT("G34 Iteration: %i");
   LSTR MSG_DECREASING_ACCURACY            = _UxGT("Accuracy Decreasing!");
   LSTR MSG_ACCURACY_ACHIEVED              = _UxGT("Accuracy Achieved");
