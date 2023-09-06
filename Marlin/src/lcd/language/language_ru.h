@@ -65,16 +65,17 @@ namespace Language_ru {
   LSTR MSG_DISABLE_STEPPERS                 = _UxGT("Выключить двигатели");
   LSTR MSG_DEBUG_MENU                       = _UxGT("Меню отладки");
   LSTR MSG_PROGRESS_BAR_TEST                = _UxGT("Тест индикатора");
+  LSTR MSG_HOMING                           = _UxGT("Парковка");
   LSTR MSG_AUTO_HOME                        = _UxGT("Парковка XYZ");
   LSTR MSG_AUTO_HOME_A                      = _UxGT("Парковка @");
   LSTR MSG_AUTO_HOME_X                      = _UxGT("Парковка X");
   LSTR MSG_AUTO_HOME_Y                      = _UxGT("Парковка Y");
   LSTR MSG_AUTO_HOME_Z                      = _UxGT("Парковка Z");
-  LSTR MSG_AUTO_Z_ALIGN                     = _UxGT("Авто Z-выравнивание");
+  LSTR MSG_AUTO_Z_ALIGN                     = _UxGT("Выравнивание Z вниз до упора");
   LSTR MSG_ITERATION                        = _UxGT("G34 Итерация: %i");
   LSTR MSG_DECREASING_ACCURACY              = _UxGT("Уменьшение точности!");
   LSTR MSG_ACCURACY_ACHIEVED                = _UxGT("Точность достигнута");
-  LSTR MSG_LEVEL_BED_HOMING                 = _UxGT("Нулевое положение");
+  LSTR MSG_LEVEL_BED_HOMING                 = _UxGT("Парковка");
   LSTR MSG_LEVEL_BED_WAITING                = _UxGT("Нажмите чтобы начать");
   LSTR MSG_LEVEL_BED_NEXT_POINT             = _UxGT("Следующая точка");
   LSTR MSG_LEVEL_BED_DONE                   = _UxGT("Выравнивание готово!");
@@ -109,7 +110,7 @@ namespace Language_ru {
     LSTR MSG_PREHEAT_M_BEDONLY              = _UxGT("Нагрев $ стол");
     LSTR MSG_PREHEAT_M_SETTINGS             = _UxGT("Нагрев $ правка");
   #endif
-  LSTR MSG_PREHEAT_CUSTOM                   = _UxGT("Нагрев Свой");
+  LSTR MSG_PREHEAT_CUSTOM                   = _UxGT("Преднагрев");
   LSTR MSG_COOLDOWN                         = _UxGT("Охлаждение");
   LSTR MSG_CUTTER_FREQUENCY                 = _UxGT("Частота");
   LSTR MSG_LASER_MENU                       = _UxGT("Управление лазером");
@@ -145,7 +146,7 @@ namespace Language_ru {
   LSTR MSG_MOVE_AXIS                        = _UxGT("Движение по осям");
   LSTR MSG_BED_LEVELING                     = _UxGT("Выравнивание стола");
   LSTR MSG_LEVEL_BED                        = _UxGT("Выровнять стол");
-  LSTR MSG_BED_TRAMMING                     = _UxGT("Выровнять углы");
+  LSTR MSG_BED_TRAMMING                     = _UxGT("Выравнять углы");
   LSTR MSG_NEXT_CORNER                      = _UxGT("Следующий угол");
   #if LCD_WIDTH > 21 || HAS_DWIN_E3V2
     LSTR MSG_BED_TRAMMING_RAISE             = _UxGT("Вверх до срабатыв. зонда");
@@ -252,8 +253,8 @@ namespace Language_ru {
   #else
     LSTR MSG_UBL_3POINT_MESH_LEVELING       = _UxGT("3-точечное выравн.");
   #endif
-  LSTR MSG_UBL_GRID_MESH_LEVELING           = _UxGT("Калибровка растера");
-  LSTR MSG_UBL_MESH_LEVEL                   = _UxGT("Выровнять сетку");
+  LSTR MSG_UBL_GRID_MESH_LEVELING           = _UxGT("Выравнивание сетки");
+  LSTR MSG_UBL_MESH_LEVEL                   = _UxGT("Выравнять сетку");
   LSTR MSG_UBL_SIDE_POINTS                  = _UxGT("Крайние точки");
   LSTR MSG_UBL_MAP_TYPE                     = _UxGT("Тип карты");
   LSTR MSG_UBL_OUTPUT_MAP                   = _UxGT("Вывести карту сетки");
@@ -545,12 +546,14 @@ namespace Language_ru {
   LSTR MSG_FILAMENTLOAD                     = _UxGT("Загрузить филамент");
   #if LCD_WIDTH > 21 || HAS_DWIN_E3V2
     LSTR MSG_FILAMENTLOAD_E                 = _UxGT("Загрузить филамент *");
+    LSTR MSG_FILAMENTUNLOAD                 = _UxGT("Выгрузить филамент");
     LSTR MSG_FILAMENTUNLOAD_E               = _UxGT("Выгрузить филамент *");
   #else
     LSTR MSG_FILAMENTLOAD_E                 = _UxGT("Подать филамент *");
+    LSTR MSG_FILAMENTUNLOAD                 = _UxGT("Убрать филамент");
     LSTR MSG_FILAMENTUNLOAD_E               = _UxGT("Убрать филамент *");
   #endif
-  LSTR MSG_FILAMENTUNLOAD_ALL               = _UxGT("Выгрузить всё");
+  LSTR MSG_FILAMENTUNLOAD_ALL               = _UxGT("Выгрузить весь фил.");
   LSTR MSG_ATTACH_MEDIA                     = _UxGT("Установить SD карту");
   LSTR MSG_CHANGE_MEDIA                     = _UxGT("Сменить SD карту");
   LSTR MSG_RELEASE_MEDIA                    = _UxGT("Освободить SD карту");
