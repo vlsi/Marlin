@@ -456,10 +456,13 @@ void MarlinUI::clear_lcd() {
   cursor.set(0, 0);
 }
 
-uint8_t _get_word(const char * const string, read_byte_cb_t cb_read_byte, lchar_t &last_char) {
-  if (!string) return 0;
+const uint8_t * const _get_word(const uint8_t * const string, read_byte_cb_t cb_read_byte, lchar_t &last_char, uint8_t &word_len) {
+  word_len = 0;
+  if (!string) {
+    return string;
+  }
 
-  const uint8_t *p = (uint8_t*)string;
+  const uint8_t *p = string;
   lchar_t wc;
   uint8_t c = 0;
 
@@ -471,7 +474,8 @@ uint8_t _get_word(const char * const string, read_byte_cb_t cb_read_byte, lchar_
     if (eol || wc == ' ' || wc == '-' || wc == '+' || wc == '.' || wc == '\n') {
       c += !eol;                  // +1 so the space will be printed
       last_char = wc;
-      return c;
+      word_len = c;
+      return p;
     }
     else c++;                     // count word characters
   }
@@ -487,15 +491,14 @@ void _wrap_string(uint8_t &row, T string, read_byte_cb_t cb_read_byte, const boo
     tft_string.set();
   };
 
-  const uint8_t *p;
-  uint8_t wrd_len = 0;
-  p = (uint8_t*)string;
+  const uint8_t *p = (uint8_t *)string;
 
-  lchar_t last_char;
-  p = &p[wrd_len];
-  bool eol = !p;
-  while (!eol) {
-    wrd_len = _get_word((const char *)p, cb_read_byte, last_char);
+  while (*p) {
+    // next_p will point to the next character even if the last_char was 0, so we need to check for last_char
+    // when advancing rather than *p only.
+    uint8_t wrd_len = 0;
+    lchar_t last_char;
+    const uint8_t *next_p = _get_word(p, cb_read_byte, last_char, wrd_len);
     const uint8_t len = tft_string.length;
     tft_string.add((T)p, wrd_len);
     const uint32_t wid = tft_string.width();
@@ -510,8 +513,11 @@ void _wrap_string(uint8_t &row, T string, read_byte_cb_t cb_read_byte, const boo
       print_str();
     }
 
-    p = &p[wrd_len];
-    eol = !*p;
+    if (!last_char) {
+      break;
+    }
+
+    p = next_p;
   }
 
   if (flush && tft_string.length > 0) print_str();
