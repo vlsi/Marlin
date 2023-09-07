@@ -559,13 +559,6 @@ void menu_configuration() {
   START_MENU();
   BACK_ITEM(MSG_MAIN);
 
-  //
-  // Debug Menu when certain options are enabled
-  //
-  #if HAS_DEBUG_MENU
-    SUBMENU(MSG_DEBUG_MENU, menu_debug);
-  #endif
-
   #if ENABLED(CUSTOM_MENU_CONFIG)
     if (TERN1(CUSTOM_MENU_CONFIG_ONLY_IDLE, !busy)) {
       #ifdef CUSTOM_MENU_CONFIG_TITLE
@@ -663,6 +656,13 @@ void menu_configuration() {
 
   #if ENABLED(SOUND_MENU_ITEM)
     EDIT_ITEM(bool, MSG_SOUND, &ui.sound_on, []{ ui.chirp(); });
+  #endif
+
+  //
+  // Debug Menu when certain options are enabled
+  //
+  #if HAS_DEBUG_MENU
+    SUBMENU(MSG_DEBUG_MENU, menu_debug);
   #endif
 
   #if ENABLED(EEPROM_SETTINGS)
