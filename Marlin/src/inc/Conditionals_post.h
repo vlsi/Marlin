@@ -3476,7 +3476,13 @@
     #elif IS_DWIN_MARLINUI
       // Defined by header
     #else
-      #define LCD_WIDTH TERN(IS_ULTIPANEL, 20, 16)
+      #if HAS_UI_480x320
+        // 34 /* FONT_LINE_HEIGHT */ * 0.538 /* AVG_CHAR_WIDTH */ = 18.3
+        #define LCD_WIDTH (TFT_WIDTH / 18)
+      #endif
+      #ifndef LCD_WIDTH
+        #define LCD_WIDTH TERN(IS_ULTIPANEL, 20, 16)
+      #endif
     #endif
   #endif
   #ifndef LCD_HEIGHT
