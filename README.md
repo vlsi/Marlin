@@ -37,6 +37,8 @@ Please test this firmware and let us know if it misbehaves in any way. Volunteer
   * Индуктивный датчик
 * Linear advance
 * Input shaping
+* Прочее
+  * `M73` set print progress -- обработка информации от слайсера об ожидаемом оставшемся времени печати
 
 ## Скачать прошивку
 
@@ -76,6 +78,8 @@ Key features:
   * Inductive sensor
 * Linear advance
 * Input shaping
+* Other
+  * `M73` set print progress -- parse progress estimation from the slicers
 
 TODO:
 * Print over Wi-Fi (support MKS Wi-Fi transfer)
