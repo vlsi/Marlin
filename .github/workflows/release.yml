@@ -50,7 +50,7 @@ jobs:
     - name: Reborn2, stock
       run: |
         pio run --environment reborn2_manual
-        DIR=$OUT_DIR/firmware_reborn2_manual
+        DIR=$OUT_DIR/reborn2_manual
         mkdir $DIR
         cp .pio/build/reborn2_manual/Robin_nano_6.bin $DIR
     - name: Reborn2, inductive sensor
