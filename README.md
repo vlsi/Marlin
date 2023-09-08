@@ -39,6 +39,7 @@ Please test this firmware and let us know if it misbehaves in any way. Volunteer
 * Input shaping
 * Прочее
   * `M73` set print progress -- обработка информации от слайсера об ожидаемом оставшемся времени печати
+  * `EMERGENCY_PARSER` -- обработка некоторых команд без доработки очереди движений, нагрева. Например, паузу, продолжение, смену Z уровня и некоторые другие команды можно будет выполнять быстрее 
 
 ## Скачать прошивку
 
@@ -80,6 +81,7 @@ Key features:
 * Input shaping
 * Other
   * `M73` set print progress -- parse progress estimation from the slicers
+  * `EMERGENCY_PARSER` -- special parser for bypassing important commands like "pause", "shutdown", "change z-offset immediately", ...
 
 TODO:
 * Print over Wi-Fi (support MKS Wi-Fi transfer)
