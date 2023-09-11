@@ -49,16 +49,40 @@ jobs:
 
     - name: Reborn2, stock
       run: |
-        pio run --environment reborn2_manual
+        ENV=reborn2_manual
+        pio run --environment $ENV
         DIR=$OUT_DIR/reborn2_manual
         mkdir $DIR
-        cp .pio/build/reborn2_manual/Robin_nano_6.bin $DIR
-    - name: Reborn2, inductive sensor
+        cp .pio/build/$ENV/Robin_nano_6.bin $DIR
+    - name: Reborn2, inductive sensor (zmin)
       run: |
-        pio run --environment reborn2_inductive
-        DIR=$OUT_DIR/reborn2_inductive_sensor
+        ENV=reborn2_inductive_zmin
+        pio run --environment $ENV
+        DIR=$OUT_DIR/reborn2_inductive_sensor_zmin
         mkdir $DIR
-        cp .pio/build/reborn2_inductive/Robin_nano_6.bin $DIR
+        cp .pio/build/$ENV/Robin_nano_6.bin $DIR
+    - name: Reborn2, inductive sensor (runout2)
+      run: |
+        ENV=reborn2_inductive_runout2
+        pio run --environment $ENV
+        DIR=$OUT_DIR/reborn2_inductive_sensor_runout2
+        mkdir $DIR
+        cp .pio/build/$ENV/Robin_nano_6.bin $DIR
+    - name: Reborn2, BLTouch sensor (zmin)
+      run: |
+        ENV=reborn2_bltouch_zmin
+        pio run --environment $ENV
+        DIR=$OUT_DIR/reborn2_bltouch_sensor_zmin
+        mkdir $DIR
+        cp .pio/build/$ENV/Robin_nano_6.bin $DIR
+    - name: Reborn2, BLTouch sensor (runout2)
+      run: |
+        ENV=reborn2_bltouch_runout2
+        pio run --environment $ENV
+        DIR=$OUT_DIR/reborn2_bltouch_sensor_runout2
+        mkdir $DIR
+        cp .pio/build/$ENV/Robin_nano_6.bin $DIR
+
     - name: Upload Firmwares
       uses: actions/upload-artifact@v3
       with:

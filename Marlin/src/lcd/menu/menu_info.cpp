@@ -212,6 +212,37 @@ void menu_info_thermistors() {
   END_SCREEN();
 }
 
+#if HAS_BED_PROBE
+//
+// About Printer > Bed probe
+//
+void menu_info_bed_probe() {
+  if (ui.use_click()) return ui.go_back();
+
+  START_SCREEN();
+
+  PSTRING_ITEM(MSG_INFO_BED_PROBE_TYPE, Z_PROBE_NAME, SS_INVERT);
+  PSTRING_ITEM(MSG_INFO_BED_PROBE_PIN,
+     #if XRB_Z_SENSOR_PIN == XRB_PIN_Z_MIN
+       "zmin (PC8)"
+     #elif XRB_Z_SENSOR_PIN == XRB_PIN_RUNOUT2
+       "runout2 (PA4)"
+     #endif
+    , SS_FULL
+  );
+  PSTRING_ITEM(MSG_INFO_HOMING_MODE,
+     #if ENABLED(USE_PROBE_FOR_Z_HOMING)
+       "probe"
+     #else
+       "endstops"
+     #endif
+    , SS_FULL
+  );
+
+  END_SCREEN();
+}
+#endif
+
 //
 // About Printer > Board Info
 //
@@ -284,6 +315,9 @@ void menu_info() {
     SUBMENU(MSG_INFO_BOARD_MENU, menu_info_board);               // Board Info >
     #if HAS_EXTRUDERS
       SUBMENU(MSG_INFO_THERMISTOR_MENU, menu_info_thermistors);  // Thermistors >
+    #endif
+    #if HAS_BED_PROBE
+      SUBMENU(MSG_INFO_BED_PROBE_MENU, menu_info_bed_probe);  // Bed probe >
     #endif
   #endif
 
