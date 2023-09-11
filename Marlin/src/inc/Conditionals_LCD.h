@@ -1449,6 +1449,14 @@
       #define TOTAL_PROBING MULTIPLE_PROBING
     #endif
   #endif
+
+  #if XRB_Z_SENSOR == XRB_Z_SENSOR_INDUCTIVE
+    #define Z_PROBE_NAME "Inductive"
+  #elif ENABLED(FIX_MOUNTED_PROBE)
+    #define Z_PROBE_NAME "Fix mounted"
+  #elif ENABLED(BLTOUCH)
+    #define Z_PROBE_NAME "BLTouch"
+  #endif
 #else
   // Clear probe pin settings when no probe is selected
   #undef Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN

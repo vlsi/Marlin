@@ -50,8 +50,10 @@ Please test this firmware and let us know if it misbehaves in any way. Volunteer
 **Все версии прошивки требуют перевода драйверов шаговых двигателей в UART**: https://telegra.ph/Reborn-UART-Drivers-01-02
 
 * `reborn2_manual` -- "stock reborn2, но с UART драйверами". Версия подходит для ручной регулировки стола, без датчиков.
-* `reborn2_inductive` -- для работы с индуктивным датчиком стола. Датчик подключается на разъём `ZMIN` (см инструкцию FlyingBear).
-* `reborn2_3dtouch` -- пока нет.
+* `reborn2_inductive_zmin` -- для работы с индуктивным датчиком стола. Датчик подключается на разъём `ZMIN` (см инструкцию FlyingBear).
+* `reborn2_inductive_runout2` -- для работы с индуктивным датчиком стола. Датчик подключается на разъём `RUNOUT2` (PA4), обычные концевики **должны быть подключены**.
+* `reborn2_bltouch_zmin` -- для работы с BLTouch датчиком стола. Датчик подключается на разъём `ZMIN` (см инструкцию FlyingBear).
+* `reborn2_bltouch_runout2` -- для работы с BLTouch датчиком стола. Датчик подключается на разъём `RUNOUT2` (PA4), обычные концевики **должны быть подключены**.
 
 ## About
 

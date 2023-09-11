@@ -321,6 +321,7 @@
 #define STR_DISPLAY_SLEEP                   "Display Sleep"
 #define STR_UI_LANGUAGE                     "UI Language"
 #define STR_Z_PROBE_OFFSET                  "Z-Probe Offset"
+#define STR_HOME_POSITION                   "Home position"
 #define STR_TEMPERATURE_UNITS               "Temperature Units"
 #define STR_USER_THERMISTORS                "User thermistors"
 #define STR_DELAYED_POWEROFF                "Delayed poweroff"

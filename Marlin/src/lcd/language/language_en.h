@@ -609,6 +609,7 @@ namespace LanguageNarrow_en {
   LSTR MSG_ZPROBE_XOFFSET                 = _UxGT("Probe X Offset");
   LSTR MSG_ZPROBE_YOFFSET                 = _UxGT("Probe Y Offset");
   LSTR MSG_ZPROBE_ZOFFSET                 = _UxGT("Probe Z Offset");
+  LSTR MSG_MANUAL_HOME_ZOFFSET            = _UxGT("Z endstop Offset");
   LSTR MSG_ZPROBE_MARGIN                  = _UxGT("Probe Margin");
   LSTR MSG_Z_FEED_RATE                    = _UxGT("Z Feed Rate");
   LSTR MSG_ENABLE_HS_MODE                 = _UxGT("Enable HS mode");
@@ -662,6 +663,10 @@ namespace LanguageNarrow_en {
   LSTR MSG_RESET_STATS                    = _UxGT("Reset Print Stats?");
   LSTR MSG_INFO_BOARD_MENU                = _UxGT("Board Info");
   LSTR MSG_INFO_THERMISTOR_MENU           = _UxGT("Thermistors");
+  LSTR MSG_INFO_BED_PROBE_MENU            = _UxGT("Bed probe");
+  LSTR MSG_INFO_BED_PROBE_TYPE            = _UxGT("Probe type");
+  LSTR MSG_INFO_BED_PROBE_PIN             = _UxGT("Probe pin");
+  LSTR MSG_INFO_HOMING_MODE               = _UxGT("Homing mode");
   LSTR MSG_INFO_EXTRUDERS                 = _UxGT("Extruders");
   LSTR MSG_INFO_BAUDRATE                  = _UxGT("Baud");
   LSTR MSG_INFO_PROTOCOL                  = _UxGT("Protocol");

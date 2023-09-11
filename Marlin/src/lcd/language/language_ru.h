@@ -479,6 +479,7 @@ namespace LanguageNarrow_ru {
   LSTR MSG_ZPROBE_YOFFSET                   = _UxGT("Смещение Y");
   LSTR MSG_ZPROBE_ZOFFSET                   = _UxGT("Смещение Z");
   LSTR MSG_MOVE_NOZZLE_TO_BED               = _UxGT("Двиг. сопло к столу");
+  LSTR MSG_MANUAL_HOME_ZOFFSET              = _UxGT("Смещение концевика Z");
   LSTR MSG_BABYSTEP_X                       = _UxGT("Микрошаг X");
   LSTR MSG_BABYSTEP_Y                       = _UxGT("Микрошаг Y");
   LSTR MSG_BABYSTEP_Z                       = _UxGT("Микрошаг Z");
@@ -524,6 +525,10 @@ namespace LanguageNarrow_ru {
   LSTR MSG_INFO_STATS_MENU                  = _UxGT("Статистика принтера");
   LSTR MSG_INFO_BOARD_MENU                  = _UxGT("Данные платы");
   LSTR MSG_INFO_THERMISTOR_MENU             = _UxGT("Термисторы");
+  LSTR MSG_INFO_BED_PROBE_MENU              = _UxGT("Датчик стола");
+  LSTR MSG_INFO_BED_PROBE_TYPE              = _UxGT("Тип датчика");
+  LSTR MSG_INFO_BED_PROBE_PIN               = _UxGT("Контакт датчика");
+  LSTR MSG_INFO_HOMING_MODE                 = _UxGT("Режим парковки");
   LSTR MSG_INFO_EXTRUDERS                   = _UxGT("Экструдеры");
   LSTR MSG_INFO_BAUDRATE                    = _UxGT("Скорость,БОД");
   LSTR MSG_INFO_PROTOCOL                    = _UxGT("Протокол");
