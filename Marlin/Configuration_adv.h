@@ -836,7 +836,7 @@
 #ifdef Z2_DRIVER_TYPE
   //#define INVERT_Z2_VS_Z_DIR        // Z2 direction signal is the opposite of Z
 
-  #if !HAS_BED_PROBE
+  #if BOTH(USE_ZMIN_PLUG, USE_ZMAX_PLUG)
     #define Z_MULTI_ENDSTOPS          // Other Z axes have their own endstops
   #endif
   #if ENABLED(Z_MULTI_ENDSTOPS)

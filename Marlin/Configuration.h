@@ -41,6 +41,22 @@
 //============================= Getting Started =============================
 //===========================================================================
 
+
+#define XRB_Z_SENSOR_MANUAL 1
+#define XRB_Z_SENSOR_INDUCTIVE 2
+#define XRB_Z_SENSOR_BLTOUCH 3
+
+#define XRB_PIN_Z_MIN 1
+#define XRB_PIN_RUNOUT2 2
+
+#if XRB_Z_SENSOR == XRB_Z_SENSOR_MANUAL
+  #define PROBE_MANUALLY
+#elif XRB_Z_SENSOR == XRB_Z_SENSOR_INDUCTIVE
+  #define FIX_MOUNTED_PROBE
+#elif XRB_Z_SENSOR == XRB_Z_SENSOR_BLTOUCH
+  #define BLTOUCH
+#endif
+
 /**
  * Here are some useful links to help get your machine configured and calibrated:
  *
@@ -1043,9 +1059,9 @@
 //#define USE_WMIN_PLUG
 //#define USE_XMAX_PLUG
 //#define USE_YMAX_PLUG
-#if ENABLED(PROBE_MANUALLY)
-  // For manual probing both Z min endstops are connected to ZMIN and ZMAX plugs
-  // For inductive and bltouch probes, we ignore ZMAX and connect probes to ZMIN
+#if XRB_Z_SENSOR_PIN != XRB_PIN_Z_MIN
+  // FlyingBear recommends connecting autolevel sensor to ZMIN and disconnect ZMAX
+  // However, it would be better to keep both ZMIN and ZMAX, and connect autolevel to NeoPixel or FilamentRunout2 ports
   #define USE_ZMAX_PLUG
 #endif
 //#define USE_IMAX_PLUG
@@ -1113,13 +1129,13 @@
 #define X_MAX_ENDSTOP_HIT_STATE HIGH
 #define Y_MIN_ENDSTOP_HIT_STATE LOW
 #define Y_MAX_ENDSTOP_HIT_STATE HIGH
-#if ENABLED(PROBE_MANUALLY)
-  #define Z_MIN_ENDSTOP_HIT_STATE LOW
-  #define Z_MAX_ENDSTOP_HIT_STATE LOW
-#else
+#if XRB_Z_SENSOR == XRB_Z_SENSOR_INDUCTIVE && ZRB_Z_SENSOR_PIN == XRB_PIN_Z_MIN
+  // Inductive sensor connected to ZMIN has HIGH hit state
   #define Z_MIN_ENDSTOP_HIT_STATE HIGH
-  #define Z_MAX_ENDSTOP_HIT_STATE HIGH
+#else
+  #define Z_MIN_ENDSTOP_HIT_STATE LOW
 #endif
+#define Z_MAX_ENDSTOP_HIT_STATE LOW
 #define I_MIN_ENDSTOP_HIT_STATE HIGH
 #define I_MAX_ENDSTOP_HIT_STATE HIGH
 #define J_MIN_ENDSTOP_HIT_STATE HIGH
@@ -1132,7 +1148,7 @@
 #define V_MAX_ENDSTOP_HIT_STATE HIGH
 #define W_MIN_ENDSTOP_HIT_STATE HIGH
 #define W_MAX_ENDSTOP_HIT_STATE HIGH
-#if DISABLED(PROBE_MANUALLY)
+#if XRB_Z_SENSOR == XRB_Z_SENSOR_INDUCTIVE
   #define Z_MIN_PROBE_ENDSTOP_HIT_STATE HIGH
 #endif
 
@@ -1288,12 +1304,12 @@
  * The probe replaces the Z-MIN endstop and is used for Z homing.
  * (Automatically enables USE_PROBE_FOR_Z_HOMING.)
  */
-#if DISABLED(PROBE_MANUALLY)
+#if XRB_Z_SENSOR_PIN == XRB_PIN_Z_MIN
   #define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
 #endif
 
 // Force the use of the probe for Z-axis homing
-//#define USE_PROBE_FOR_Z_HOMING
+// #define USE_PROBE_FOR_Z_HOMING
 
 /**
  * Z_MIN_PROBE_PIN
@@ -1310,7 +1326,10 @@
  *      - normally-closed switches to GND and D32.
  *      - normally-open switches to 5V and D32.
  */
-//#define Z_MIN_PROBE_PIN PE7 // Pin 32 is the RAMPS default
+#if XRB_Z_SENSOR_PIN == XRB_PIN_RUNOUT2
+  // MT_DET, it is a pin for second filament detection, however it is convenient to use PA4 as it matches use the stock sensor connector
+  #define Z_MIN_PROBE_PIN PA4
+#endif
 
 /**
  * Probe Type
@@ -1594,7 +1613,7 @@
 #define Z_CLEARANCE_MULTI_PROBE     4 // Z Clearance between multiple probes
 #define Z_AFTER_PROBING           5 // Z position after probing is done
 
-#define Z_PROBE_LOW_POINT          -2 // Farthest distance below the trigger-point to go before stopping
+#define Z_PROBE_LOW_POINT          -5 // Farthest distance below the trigger-point to go before stopping
 
 // For M851 give a range for adjusting the Z probe offset
 #define Z_PROBE_OFFSET_RANGE_MIN -5
@@ -2133,7 +2152,7 @@
  * - Allows Z homing only when XY positions are known and trusted.
  * - If stepper drivers sleep, XY homing may be required again before Z homing.
  */
-#if DISABLED(PROBE_MANUALLY)
+#if ENABLED(USE_PROBE_FOR_Z_HOMING)
   #define Z_SAFE_HOMING
 #endif
 
