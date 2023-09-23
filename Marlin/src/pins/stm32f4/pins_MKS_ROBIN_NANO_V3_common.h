@@ -320,18 +320,18 @@
 
   #define TFT_BUFFER_SIZE                  14400
 
-  // #ifndef TOUCH_CALIBRATION_X
-  //   #define TOUCH_CALIBRATION_X           -17253
-  // #endif
-  // #ifndef TOUCH_CALIBRATION_Y
-  //   #define TOUCH_CALIBRATION_Y            11579
-  // #endif
-  // #ifndef TOUCH_OFFSET_X
-  //   #define TOUCH_OFFSET_X                   514
-  // #endif
-  // #ifndef TOUCH_OFFSET_Y
-  //   #define TOUCH_OFFSET_Y                   -24
-  // #endif
+  #ifndef TOUCH_CALIBRATION_X
+    #define TOUCH_CALIBRATION_X           -17253
+  #endif
+  #ifndef TOUCH_CALIBRATION_Y
+    #define TOUCH_CALIBRATION_Y            11579
+  #endif
+  #ifndef TOUCH_OFFSET_X
+    #define TOUCH_OFFSET_X                   514
+  #endif
+  #ifndef TOUCH_OFFSET_Y
+    #define TOUCH_OFFSET_Y                   -24
+  #endif
   #ifndef TOUCH_ORIENTATION
     #define TOUCH_ORIENTATION    TOUCH_LANDSCAPE
   #endif
