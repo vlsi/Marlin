@@ -275,6 +275,10 @@
  * M851 - Set Z probe's XYZ offsets in current units. (Negative values: X=left, Y=front, Z=below)
  * M852 - Set skew factors: "M852 [I<xy>] [J<xz>] [K<yz>]". (Requires SKEW_CORRECTION_GCODE, plus SKEW_CORRECTION_FOR_Z for IJ)
  *
+ * "W" codes: added in reborn2-marlin
+ *
+ * W851 - Set absolute position on endstop trigger
+ *
  *** I2C_POSITION_ENCODERS ***
  * M860 - Report the position of position encoder modules.
  * M861 - Report the status of position encoder modules.
@@ -1126,6 +1130,11 @@ private:
   #if HAS_BED_PROBE
     static void M851();
     static void M851_report(const bool forReplay=true);
+  #endif
+
+  #if ENABLED(EDITABLE_HOME_POS)
+    static void W851();
+    static void W851_report(const bool forReplay=true);
   #endif
 
   #if ENABLED(SKEW_CORRECTION_GCODE)

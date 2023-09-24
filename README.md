@@ -41,6 +41,13 @@ Please test this firmware and let us know if it misbehaves in any way. Volunteer
   * `M73` set print progress -- обработка информации от слайсера об ожидаемом оставшемся времени печати
   * `EMERGENCY_PARSER` -- обработка некоторых команд без доработки очереди движений, нагрева. Например, паузу, продолжение, смену Z уровня и некоторые другие команды можно будет выполнять быстрее 
 
+Новые G-code:
+* `W951 X.. Y.. Z..`. Позволяет задать значения `X`, `Y`, `Z` при парковке. Это полезно, когда Z паркуется по обычным концевикам.
+
+   Ранее, в Marlin после парковки по концевикам координата `Z` устанавливалась в `0`. При этом, между соплом и столом
+   будет зазор. Например, если зазор оказался `1.0мм`, то команда `W951 Z1.0` сделает так, что при следующей парковке
+   `Z` будет равно `1.0`. В прошивке с датчиком стола, `Мастер настройки Z-offset` автоматически выставит толщину стола.
+
 ## Скачать прошивку
 
 Прошивка рассчитана на плату MKS Robin Nano V3.2 и драйвера TMC2208 (2225) на осях XYZ и TMC2209 на экструдере.
@@ -84,6 +91,13 @@ Key features:
 * Other
   * `M73` set print progress -- parse progress estimation from the slicers
   * `EMERGENCY_PARSER` -- special parser for bypassing important commands like "pause", "shutdown", "change z-offset immediately", ...
+
+New G-code:
+* `W951 X.. Y.. Z..`. Enables to configure `X`, `Y`, `Z` home positions. It is helpful when `Z` homes with regular endstops.
+
+   Previously, Marlin sets `Z` to `0` when homing with regular endstops. However, there will be non-zero nozzle-to-bed
+   gap. For example, if the gap turned out to be `1.0mm`, then `W951 Z1.0` would make sure the next homing
+   `Z` would equal to `1.0`. If the firmware supports bed probe, `Z offset wizard` would automatically adjust bed-to-endstops offset.
 
 TODO:
 * Print over Wi-Fi (support MKS Wi-Fi transfer)

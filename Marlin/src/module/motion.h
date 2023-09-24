@@ -125,14 +125,26 @@ extern int16_t feedrate_percentage;
 inline float pgm_read_any(const float *p)   { return TERN(__IMXRT1062__, *p, pgm_read_float(p)); }
 inline int8_t pgm_read_any(const int8_t *p) { return TERN(__IMXRT1062__, *p, pgm_read_byte(p)); }
 
+#define XYZ_DEFAULT_VALUES(OPT) NUM_AXIS_ARRAY(X_##OPT, Y_##OPT, Z_##OPT, I_##OPT, J_##OPT, K_##OPT, U_##OPT, V_##OPT, W_##OPT)
+
 #define XYZ_DEFS(T, NAME, OPT) \
   inline T NAME(const AxisEnum axis) { \
-    static const XYZval<T> NAME##_P DEFS_PROGMEM = NUM_AXIS_ARRAY(X_##OPT, Y_##OPT, Z_##OPT, I_##OPT, J_##OPT, K_##OPT, U_##OPT, V_##OPT, W_##OPT); \
+    static const XYZval<T> NAME##_P DEFS_PROGMEM = XYZ_DEFAULT_VALUES(OPT); \
     return pgm_read_any(&NAME##_P[axis]); \
   }
+#define XYZ_EDITABLE(T, NAME) \
+  extern xyz_pos_t NAME##_p; \
+  inline T NAME(const AxisEnum axis) { \
+    return NAME##_p[axis]; \
+  }
+
 XYZ_DEFS(float, base_min_pos,   MIN_POS);
 XYZ_DEFS(float, base_max_pos,   MAX_POS);
-XYZ_DEFS(float, base_home_pos,  HOME_POS);
+#if ENABLED(EDITABLE_HOME_POS)
+  XYZ_EDITABLE(float, base_home_pos);
+#else
+  XYZ_DEFS(float, base_home_pos,  HOME_POS);
+#endif
 XYZ_DEFS(float, max_length,     MAX_LENGTH);
 XYZ_DEFS(int8_t, home_dir, HOME_DIR);
 

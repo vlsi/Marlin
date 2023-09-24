@@ -86,6 +86,12 @@ bool relative_mode; // = false;
 
 xyze_pos_t current_position = LOGICAL_AXIS_ARRAY(0, X_HOME_POS, Y_HOME_POS, Z_INIT_POS, I_HOME_POS, J_HOME_POS, K_HOME_POS, U_HOME_POS, V_HOME_POS, W_HOME_POS);
 
+#if ENABLED(EDITABLE_HOME_POS)
+  // Stores positions of the endstops. It enables adjusting MANUAL_?_HOME_POS in the runtime
+  // Use base_home_pos(?_AXIS) function for reading values as it supports both compile-time and runtime home positions
+  xyz_pos_t base_home_pos_p = XYZ_DEFAULT_VALUES(HOME_POS);
+#endif
+
 /**
  * Cartesian Destination
  *   The destination for a move, filled in by G-code movement commands,

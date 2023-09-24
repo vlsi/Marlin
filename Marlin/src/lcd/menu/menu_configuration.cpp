@@ -576,6 +576,14 @@ void menu_configuration() {
   #elif HAS_BED_PROBE
     EDIT_ITEM(LCD_Z_OFFSET_TYPE, MSG_ZPROBE_ZOFFSET, &probe.offset.z, Z_PROBE_OFFSET_RANGE_MIN, Z_PROBE_OFFSET_RANGE_MAX);
   #endif
+  #if ENABLED(EDITABLE_HOME_POS)
+    #if WITHIN(EDITABLE_HOME_Z_RANGE_MIN, -9, 9) && WITHIN(EDITABLE_HOME_Z_RANGE_MAX, -9, 9)
+      #define MSG_MANUAL_HOME_ZOFFSET_TYPE float43    // Values from -9.000 to +9.000
+    #else
+      #define MSG_MANUAL_HOME_ZOFFSET_TYPE float42_52    // Values from -999.00 to +999.00
+    #endif
+    EDIT_ITEM(MSG_MANUAL_HOME_ZOFFSET_TYPE, MSG_MANUAL_HOME_ZOFFSET, &base_home_pos_p.z, EDITABLE_HOME_Z_RANGE_MIN, EDITABLE_HOME_Z_RANGE_MAX);
+  #endif
 
   //
   // Set Fan Controller speed

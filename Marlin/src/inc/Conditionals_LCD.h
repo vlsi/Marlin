@@ -1239,6 +1239,34 @@
   #endif
 #endif
 
+#if ENABLED(EDITABLE_HOME_POS)
+  #if X_HOME_TO_MIN
+    #define EDITABLE_HOME_X_RANGE_REF X_MIN_POS
+  #else
+    #define EDITABLE_HOME_X_RANGE_REF X_MAX_POS
+  #endif
+  #define EDITABLE_HOME_X_RANGE_MIN (EDITABLE_HOME_X_RANGE_REF - 10)
+  #define EDITABLE_HOME_X_RANGE_MAX (EDITABLE_HOME_X_RANGE_REF + 10)
+  #if HAS_Y_AXIS
+    #if Y_HOME_TO_MIN
+      #define EDITABLE_HOME_Y_RANGE_REF Y_MIN_POS
+    #else
+      #define EDITABLE_HOME_Y_RANGE_REF Y_MAX_POS
+    #endif
+    #define EDITABLE_HOME_Y_RANGE_MIN (EDITABLE_HOME_Y_RANGE_REF - 10)
+    #define EDITABLE_HOME_Y_RANGE_MAX (EDITABLE_HOME_Y_RANGE_REF + 10)
+  #endif
+  #if HAS_Z_AXIS
+    #if Z_HOME_TO_MIN
+      #define EDITABLE_HOME_Z_RANGE_REF Z_MIN_POS
+    #else
+      #define EDITABLE_HOME_Z_RANGE_REF Z_MAX_POS
+    #endif
+    #define EDITABLE_HOME_Z_RANGE_MIN (EDITABLE_HOME_Z_RANGE_REF + Z_PROBE_OFFSET_RANGE_MIN)
+    #define EDITABLE_HOME_Z_RANGE_MAX (EDITABLE_HOME_Z_RANGE_REF + Z_PROBE_OFFSET_RANGE_MAX)
+  #endif
+#endif
+
 /**
  * Conditionals based on the type of Bed Probe
  */
