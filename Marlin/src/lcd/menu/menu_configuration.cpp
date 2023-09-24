@@ -576,6 +576,9 @@ void menu_configuration() {
   #elif HAS_BED_PROBE
     EDIT_ITEM(LCD_Z_OFFSET_TYPE, MSG_ZPROBE_ZOFFSET, &probe.offset.z, Z_PROBE_OFFSET_RANGE_MIN, Z_PROBE_OFFSET_RANGE_MAX);
   #endif
+  #if ENABLED(EDITABLE_HOME_POS)
+    EDIT_ITEM(LCD_Z_OFFSET_TYPE, MSG_MANUAL_HOME_ZOFFSET, &base_home_pos_p.z, EDITABLE_HOME_Z_RANGE_MIN, EDITABLE_HOME_Z_RANGE_MAX);
+  #endif
 
   //
   // Set Fan Controller speed
