@@ -44,6 +44,10 @@ void _goto_manual_move_z(const_float_t);
 // Global storage
 float z_offset_backup, calculated_z_offset, z_offset_ref;
 
+#if ENABLED(EDITABLE_HOME_POS)
+  float calculated_home_z_offset;
+#endif
+
 void set_offset_and_go_back(const_float_t z) {
   probe.offset.z = z;
   SET_SOFT_ENDSTOP_LOOSE(false);
@@ -54,12 +58,18 @@ void set_offset_and_go_back(const_float_t z) {
 void probe_offset_wizard_menu() {
   START_MENU();
   calculated_z_offset = probe.offset.z + current_position.z - z_offset_ref;
+  #if ENABLED(EDITABLE_HOME_POS)
+    calculated_home_z_offset = base_home_pos_p.z - current_position.z;
+  #endif
 
   if (LCD_HEIGHT >= 4)
     STATIC_ITEM(MSG_MOVE_NOZZLE_TO_BED, SS_CENTER|SS_INVERT);
 
   STATIC_ITEM_F(F("Z"), SS_CENTER, ftostr42_52(current_position.z));
   STATIC_ITEM(MSG_ZPROBE_ZOFFSET, SS_FULL, ftostr42_52(calculated_z_offset));
+  #if ENABLED(EDITABLE_HOME_POS)
+    STATIC_ITEM(MSG_MANUAL_HOME_ZOFFSET, SS_FULL, ftostr42_52(calculated_home_z_offset));
+  #endif
 
   SUBMENU(MSG_MOVE_1MM,  []{ _goto_manual_move_z( 1);    });
   SUBMENU(MSG_MOVE_01MM, []{ _goto_manual_move_z( 0.1f); });
@@ -69,6 +79,9 @@ void probe_offset_wizard_menu() {
 
   ACTION_ITEM(MSG_BUTTON_DONE, []{
     set_offset_and_go_back(calculated_z_offset);
+    #if ENABLED(EDITABLE_HOME_POS)
+      base_home_pos_p.z = calculated_home_z_offset;
+    #endif
     current_position.z = z_offset_ref;  // Set Z to z_offset_ref, as we can expect it is at probe height
     sync_plan_position();
     do_z_post_clearance();

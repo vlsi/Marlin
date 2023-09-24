@@ -2284,6 +2284,11 @@
 //#define MANUAL_W_HOME_POS 0
 
 /**
+ * Allows configuring Z position of the endstops with W951.
+ */
+#define EDITABLE_HOME_POS
+
+/**
  * Use "Z Safe Homing" to avoid homing with a Z probe outside the bed area.
  *
  * - Moves the Z probe (or nozzle) to a defined XY point before Z homing.

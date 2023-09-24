@@ -1181,6 +1181,13 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
     }
     break;
 
+    case 'W': switch (parser.codenum) {
+      #if ENABLED(EDITABLE_HOME_POS)
+        case 851: W851(); break; // W851: set absolute position on endstop trigger
+      #endif
+    }
+    break;
+
     case 'T': T(parser.codenum); break;                           // Tn: Tool Change
 
     #if ENABLED(MARLIN_DEV_MODE)

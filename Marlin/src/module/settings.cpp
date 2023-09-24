@@ -36,7 +36,7 @@
  */
 
 // Change EEPROM version if the structure changes
-#define EEPROM_VERSION "V88"
+#define EEPROM_VERSION "W1"
 #define EEPROM_OFFSET 100
 
 // Check the integrity of data offsets.
@@ -281,6 +281,10 @@ typedef struct SettingsDataStruct {
   //
   #if NUM_AXES
     xyz_pos_t probe_offset;                             // M851 X Y Z
+  #endif
+
+  #if ENABLED(EDITABLE_HOME_POS)
+    xyz_pos_t manual_home_pos;
   #endif
 
   //
@@ -972,6 +976,16 @@ void MarlinSettings::postprocess() {
       EEPROM_WRITE(zpo);
     }
     #endif
+
+    //
+    // Editable Home Z Offset
+    //
+    {
+      #if ENABLED(EDITABLE_HOME_POS)
+        _FIELD_TEST(manual_home_pos);
+        EEPROM_WRITE(base_home_pos_p);
+      #endif
+    }
 
     //
     // Planar Bed Leveling matrix
@@ -1993,6 +2007,15 @@ void MarlinSettings::postprocess() {
         EEPROM_READ(zpo);
       }
       #endif
+
+      //
+      // Editable Home Z Offset
+      //
+      {
+        #if ENABLED(EDITABLE_HOME_POS)
+          EEPROM_READ(base_home_pos_p);
+        #endif
+      }
 
       //
       // Planar Bed Leveling matrix
@@ -3111,6 +3134,17 @@ void MarlinSettings::reset() {
     scara_home_offset.reset();
   #elif HAS_HOME_OFFSET
     home_offset.reset();
+  #endif
+
+  #if ENABLED(EDITABLE_HOME_POS)
+    base_home_pos_p.reset();
+    base_home_pos_p[X_AXIS] = EDITABLE_HOME_X_RANGE_REF;
+    #if HAS_Y_AXIS
+      base_home_pos_p[Y_AXIS] = EDITABLE_HOME_Y_RANGE_REF;
+    #endif
+    #if HAS_Z_AXIS
+      base_home_pos_p[Z_AXIS] = EDITABLE_HOME_Z_RANGE_REF;
+    #endif
   #endif
 
   TERN_(HAS_HOTEND_OFFSET, reset_hotend_offsets());
