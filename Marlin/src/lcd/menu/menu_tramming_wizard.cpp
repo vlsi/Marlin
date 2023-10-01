@@ -45,7 +45,7 @@
   #include "../../feature/bedlevel/bedlevel.h"
 #endif
 
-#define SIMULATOR_TESTING
+// #define SIMULATOR_TESTING
 
 static uint8_t tram_target = 0;
 static float z_measured[G35_PROBE_COUNT];
