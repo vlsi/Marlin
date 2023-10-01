@@ -291,16 +291,15 @@ const uint8_t * const _get_word(const uint8_t * const string, read_byte_cb_t cb_
   }
 }
 
+void print_str(uint8_t &row) {
+  menu_line(row++);
+  tft_string.trim();
+  tft.add_text(tft_string.center(TFT_WIDTH), MENU_TEXT_Y_OFFSET, COLOR_MENU_TEXT, tft_string);
+  tft_string.set();
+}
+
 template<typename T>
-void _wrap_string(uint8_t &row, T string, read_byte_cb_t cb_read_byte, const bool flush=false) {
-
-  auto print_str = [&row] () {
-    menu_line(row++);
-    tft_string.trim();
-    tft.add_text(tft_string.center(TFT_WIDTH), MENU_TEXT_Y_OFFSET, COLOR_MENU_TEXT, tft_string);
-    tft_string.set();
-  };
-
+void _wrap_string(uint8_t &row, T string, read_byte_cb_t cb_read_byte) {
   const uint8_t *p = (uint8_t *)string;
 
   while (*p) {
@@ -315,12 +314,12 @@ void _wrap_string(uint8_t &row, T string, read_byte_cb_t cb_read_byte, const boo
 
     if (wid > TFT_WIDTH) {
       tft_string.truncate(len);
-      print_str();
+      print_str(row);
       tft_string.set((T)p, wrd_len);
     }
     if (last_char == '\n') {
       tft_string.truncate(tft_string.length - 1);
-      print_str();
+      print_str(row);
     }
 
     if (!last_char) {
@@ -329,8 +328,6 @@ void _wrap_string(uint8_t &row, T string, read_byte_cb_t cb_read_byte, const boo
 
     p = next_p;
   }
-
-  if (flush && tft_string.length > 0) print_str();
 }
 
 void MarlinUI::draw_message_on_screen(FSTR_P const pref, const char * const string/*=nullptr*/, FSTR_P const suff/*=nullptr*/) {
@@ -341,7 +338,10 @@ void MarlinUI::draw_message_on_screen(FSTR_P const pref, const char * const stri
 
   if (plen) _wrap_string<FSTR_P>(row, pref, read_byte_rom);
   if (string) _wrap_string<const char * const>(row, string, read_byte_ram);
-  if (slen) _wrap_string<FSTR_P>(row, suff, read_byte_rom, true);
+  if (slen) _wrap_string<FSTR_P>(row, suff, read_byte_rom);
+  if (tft_string.length > 0) {
+    print_str(row);
+  }
 }
 
 #if HAS_LCD_BRIGHTNESS
