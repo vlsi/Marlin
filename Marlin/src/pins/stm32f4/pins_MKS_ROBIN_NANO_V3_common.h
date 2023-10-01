@@ -146,8 +146,9 @@
 #define HEATER_1_PIN                        PB0   // HEATER2
 #define HEATER_BED_PIN                      PA0   // HOT BED
 
-#define FAN0_PIN                            PC14  // FAN
-#define FAN1_PIN                            PB1   // FAN1
+// Reborn 2 connects fan0 and fan1 in reverse
+#define FAN0_PIN                            PB1  // FAN
+#define FAN1_PIN                            PC14   // FAN1
 
 //
 // Thermocouples
