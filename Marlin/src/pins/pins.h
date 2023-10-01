@@ -769,7 +769,7 @@
 #elif MB(MKS_ROBIN_NANO_V3_1)
   #include "stm32f4/pins_MKS_ROBIN_NANO_V3.h"       // STM32F4                              env:mks_robin_nano_v3_1 env:mks_robin_nano_v3_1_usb_flash_drive env:mks_robin_nano_v3_1_usb_flash_drive_msc
 #elif MB(MKS_NANO6)
-  #include "stm32f4/pins_MKS_ROBIN_NANO6.h"         // STM32F4                              env:mks_robin_nano6
+  #include "stm32f4/pins_MKS_ROBIN_NANO6.h"         // STM32F4                              env:reborn2_manual env:reborn2_inductive_zmin env:reborn2_inductive_runout2 env:reborn2_bltouch_zmin env:reborn2_bltouch_runout2
 #elif MB(ANET_ET4)
   #include "stm32f4/pins_ANET_ET4.h"                // STM32F4                              env:Anet_ET4_no_bootloader env:Anet_ET4_OpenBLT
 #elif MB(ANET_ET4P)
