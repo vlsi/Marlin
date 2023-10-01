@@ -1628,7 +1628,7 @@ void prepare_line_to_destination() {
     LOOP_NUM_AXES(i) if (TEST(axis_bits, i)) need[n++] = all_axes[i];
     need[n] = '\0';
 
-    SString<30> msg;
+    SString<40> msg;
     msg.setf(GET_EN_TEXT_F(MSG_HOME_FIRST), need);
     SERIAL_ECHO_START();
     msg.echoln();
